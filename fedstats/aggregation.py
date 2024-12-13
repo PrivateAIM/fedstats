@@ -8,7 +8,7 @@ class MetaAnalysisAggregatorUnit:
         MetaAnalysisAggregator can be used to aggregate K single effect sizes.
 
         Used method is a fixed effect meta analysis or also called inverse variance weights. 
-        See for example Table 1 in https://doi.org/10.1093/bioinformatics/btq340
+        See for example Table 1 right column in https://doi.org/10.1093/bioinformatics/btq340
 
         :param results: A list containing K tuples of length 2. First element is the effect size, the second the variance,
         """
