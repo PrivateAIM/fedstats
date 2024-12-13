@@ -10,3 +10,4 @@ This repo is a collection of code that should be integrated into FLAME in the fu
 ## Contribute
 
 - The repo uses poetry. Assuming you have installed poetry: Clone the repo and type `poetry install`.
+- Activate the environment with `poetry shell`.
