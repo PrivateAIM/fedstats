@@ -1,6 +1,38 @@
-from typing import Dict
+from typing import dict, list
 import numpy as np
 from scipy.stats import norm
+
+
+class MetaAnalysisAggregator:
+    def __init__(self, results: list) -> None:
+        """
+        Wrapper class to handle aggregation via meta analysis.
+
+        The object is either a MetaAnalysisAggregatorUnit or a MetaAnalysisAggregatorCollection. For typing details, see the two classes.
+
+        :param results: A list of tuples or a list of lists of tuples. See subclasses for more.
+        """
+
+        self.results = results
+        self.isunit = self.check_input()
+        aggregator = MetaAnalysisAggregatorUnit if self.isunit else MetaAnalysisAggregatorCollection
+        self.aggregator = aggregator(results)
+
+    def check_input(self):
+        if all(isinstance(item, tuple) for item in self.results):
+            return True 
+        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.results):
+            return False
+        else:
+            raise TypeError("Input should be wither a list of tuples, or a list of list of tuples.")
+
+    def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
+        self.aggregator.aggregate_results(calculate_heterogeneity=calculate_heterogeneity)
+
+    def get_results(self) -> dict:
+        return self.aggregator.get_results()
+
+    
 
 class MetaAnalysisAggregatorUnit:
     def __init__(self, results: list[tuple[float, float]]):
@@ -63,13 +95,14 @@ class MetaAnalysisAggregatorUnit:
         
         self.calculate_pooled_effect_size()
         self.calculate_pooled_variance()
+
         self.calculate_confidence_interval()
     
         if calculate_heterogeneity:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> Dict:
+    def get_results(self) -> dict:
         """
         Get results fom the object
         """
@@ -164,7 +197,7 @@ class MetaAnalysisAggregatorCollection:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> Dict:
+    def get_results(self) -> dict:
         """
         Get results fom the object
         """
