@@ -1,4 +1,3 @@
-from typing import dict, list
 import numpy as np
 from scipy.stats import norm
 
@@ -18,7 +17,7 @@ class MetaAnalysisAggregator:
         aggregator = MetaAnalysisAggregatorUnit if self.isunit else MetaAnalysisAggregatorCollection
         self.aggregator = aggregator(results)
 
-    def check_input(self):
+    def check_input(self) -> bool:
         if all(isinstance(item, tuple) for item in self.results):
             return True 
         elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.results):
@@ -29,7 +28,7 @@ class MetaAnalysisAggregator:
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         self.aggregator.aggregate_results(calculate_heterogeneity=calculate_heterogeneity)
 
-    def get_results(self) -> dict:
+    def get_results(self) -> dict[str, np.ndarray] | dict[str, float]:
         return self.aggregator.get_results()
 
     
@@ -68,8 +67,7 @@ class MetaAnalysisAggregatorUnit:
         """
         Calculate a symmetric $(1-\alpha)$% confidence interval for the pooled effect size.
 
-        Parameters:
-            z_score (float): Z-score for the desired confidence level (default is 1.96 for 95%).
+        :param alpha_level: A float between [0,1] that representes the confidence level.
 
         """
         std_error = np.sqrt(self.pooled_variance)
@@ -85,12 +83,11 @@ class MetaAnalysisAggregatorUnit:
         self.q_stat = np.sum(self.weights * (self.effect_sizes - self.pooled_effect_size) ** 2).item()
 
 
-    def aggregate_results(self, calculate_heterogeneity: bool = False):
+    def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         """
         Perform the meta-analysis and return all results.
 
-        Returns:
-            dict: Contains pooled effect size, confidence interval, and Q-statistic.
+        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated. 
         """
         
         self.calculate_pooled_effect_size()
@@ -102,9 +99,12 @@ class MetaAnalysisAggregatorUnit:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> dict:
+    def get_results(self) -> dict[str, float]:
         """
         Get results fom the object
+
+        Returns:
+            A dict with results.
         """
         results = {}
         results["aggregated_results"] = self.pooled_effect_size
@@ -124,8 +124,8 @@ class MetaAnalysisAggregatorCollection:
         """
         MetaAnalysisAggregatorCollection is a wrapper of MetaAnalysisAggregatorUnit for multiple effect sizes.
 
-        This class receives and processes estimators from `K` servers, where each server produces a list of results.
-        Each element in these lists is itself a list containing `P` tuples, corresponding to `P` effect sizes (effect size, variance)
+        This class receives and processes estimators from $K$ servers, where each server produces a list of results.
+        Each element in these lists is itself a list containing $P$ tuples, corresponding to $P$ effect sizes (effect size, variance)
 
         :param results: A list of length K containting p lists with tuples of length 2. First element is the effect size, the second the variance,
 
@@ -163,11 +163,7 @@ class MetaAnalysisAggregatorCollection:
         """
         Calculate a symmetric $(1-\alpha)$% confidence interval for the pooled effect size.
 
-        Parameters:
-            z_score (float): Z-score for the desired confidence level (default is 1.96 for 95%).
-
-        Returns:
-            (float, float): Lower and upper bounds of the confidence interval.
+        :param alpha_level: A float between [0,1] that representes the confidence level.
         """
         for unit in self.aggregator_units:
             unit.calculate_confidence_interval(alpha_level=alpha_level)
@@ -181,14 +177,12 @@ class MetaAnalysisAggregatorCollection:
             unit.calculate_q_statistic()
 
 
-    def aggregate_results(self, calculate_heterogeneity: bool = False):
+    def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         """
         Perform the meta-analysis and return all results.
 
-        Returns:
-            dict: Contains pooled effect size, confidence interval, and Q-statistic.
+        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated. 
         """
-        
         self.calculate_pooled_effect_size()
         self.calculate_pooled_variance()
         self.calculate_confidence_interval()
@@ -197,7 +191,7 @@ class MetaAnalysisAggregatorCollection:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> dict:
+    def get_results(self) -> dict[str, np.ndarray]:
         """
         Get results fom the object
         """
