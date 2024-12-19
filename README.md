@@ -1,4 +1,5 @@
 # Federated statistics WP1
+![CI](https://github.com/RaphaelRe/fedstats/actions/workflows/ci.yml/badge.svg)
 
 This repo is a collection of code that should be integrated into FLAME in the future.
 
