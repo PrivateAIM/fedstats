@@ -1,5 +1,5 @@
 
-name: CI - Run Tests with Poetry
+name: CI
 
 on:
   push:
