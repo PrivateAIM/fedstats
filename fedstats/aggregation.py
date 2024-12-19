@@ -28,13 +28,13 @@ class MetaAnalysisAggregator:
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         self.aggregator.aggregate_results(calculate_heterogeneity=calculate_heterogeneity)
 
-    def get_results(self) -> dict[str, np.ndarray] | dict[str, float]:
+    def get_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
         return self.aggregator.get_results()
 
     
 
 class MetaAnalysisAggregatorUnit:
-    def __init__(self, results: list[tuple[float, float]]):
+    def __init__(self, results: list[tuple[float, float]]) -> None:
         """
         MetaAnalysisAggregator can be used to aggregate K single effect sizes.
 
@@ -99,7 +99,7 @@ class MetaAnalysisAggregatorUnit:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> dict[str, float]:
+    def get_results(self) -> dict[str, tuple[float, float] | float]:
         """
         Get results fom the object
 
