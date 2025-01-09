@@ -41,7 +41,7 @@ def make_ests(x):
     return m, m-1.96*x[:,1], m+1.96*x[:,1]
 
 
-def plot_forest(data, ylabels=None, colors=None, names=None, save_plot=False):
+def plot_forest(data, ylabels=None, colors=None, names=None, alpha=None, save_plot=False):
     for i, (point_estimates, lower_bounds, upper_bounds) in enumerate(data):
         if len(point_estimates) != len(lower_bounds) or len(point_estimates) != len(upper_bounds):
             raise ValueError(f"Arrays for point estimates, lower bounds, and upper bounds must have the same length for dataset {i}.")
@@ -58,6 +58,9 @@ def plot_forest(data, ylabels=None, colors=None, names=None, save_plot=False):
     if colors is None:
         colors = plt.cm.cividis(np.linspace(0, 1, len(data)))
 
+    if alpha is None:
+        alpha = [1 for _ in range(len(data))]
+
     if names is None:
         names = [str(i+1) for i in range(len(data))]
 
@@ -71,8 +74,9 @@ def plot_forest(data, ylabels=None, colors=None, names=None, save_plot=False):
         jittered_positions = y_positions + jitter_offsets[idx]  # Apply jitter to y-positions
         plt.errorbar(point_estimates, jittered_positions, 
                      xerr=[point_estimates - lower_bounds, upper_bounds - point_estimates], 
-                     fmt='o', color=colors[idx], ecolor=colors[idx], capsize=4, 
+                     fmt='o', color=colors[idx], ecolor=colors[idx], capsize=4,
                      label=names[idx],
+                     alpha=alpha[idx],
                      elinewidth=3,
                      markeredgewidth=3)
     
@@ -130,5 +134,6 @@ if __name__ == "__main__":
                 ylabels=cph.params_.index.to_list(),
                 colors=["darkblue", "darkorange", "darkgray", "darkgray"],
                 names=["aggregated", "pooled data", "local data1", "local data2"],
+                alpha=[0.6,0.6,1,1],
                 save_plot=parser.parse_args().saveplot)
 
