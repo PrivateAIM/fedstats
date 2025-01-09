@@ -23,7 +23,7 @@ class MetaAnalysisAggregator:
         elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.results):
             return False
         else:
-            raise TypeError("Input should be wither a list of tuples, or a list of list of tuples.")
+            raise TypeError("Input should be either a list of tuples, or a list of list of tuples.")
 
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         self.aggregator.aggregate_results(calculate_heterogeneity=calculate_heterogeneity)
@@ -173,6 +173,7 @@ class MetaAnalysisAggregatorCollection:
         """
         Calculate the Q-statistic for heterogeneity.
         """
+        self.q_stat_calculated = True
         for unit in self.aggregator_units:
             unit.calculate_q_statistic()
 
@@ -199,7 +200,7 @@ class MetaAnalysisAggregatorCollection:
         results['aggregated_results'] = np.array([unit.pooled_effect_size for unit in self.aggregator_units])
         results['aggregated_variance'] = np.array([unit.pooled_variance for unit in self.aggregator_units])
         results['confidence_interval'] = np.array([(unit.ci_lower, unit.ci_upper) for unit in self.aggregator_units])
-        if getattr(self, "q_stat", None) is not None:
+        if getattr(self, "q_stat_calculated", None) is not None:
             results['q_statistic'] = np.array([unit.q_stat for unit in self.aggregator_units])
         return results
 
