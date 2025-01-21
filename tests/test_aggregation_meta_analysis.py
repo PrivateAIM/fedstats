@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from fedstats.aggregation import MetaAnalysisAggregator, MetaAnalysisAggregatorUnit, MetaAnalysisAggregatorCollection
+from fedstats.aggregation.meta_analysis import MetaAnalysisAggregator, MetaAnalysisAggregatorUnit, MetaAnalysisAggregatorCollection
 
 def test_aggregator_unit():
     """
