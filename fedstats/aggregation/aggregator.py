@@ -14,14 +14,14 @@ class Aggregator(ABC):
         self.results = results
 
     @abstractmethod
-    def aggregate_results(self, *args, **kwargs) -> None:
+    def aggregate_results(self, *args, **kwargs) -> None:  # pragma: no cover
         """
         Abstract method to that defines how results are aggregated.
         """
         pass
 
     @abstractmethod
-    def get_results(self, *args, **kwargs) -> Union[Dict[str, np.ndarray], Dict[str, Union[float, Tuple[float, float]]]]:
+    def get_results(self, *args, **kwargs) -> Union[Dict[str, np.ndarray], Dict[str, Union[float, Tuple[float, float]]]]:  # pragma: no cover
         """
         Abstract method to return aggregated results.
 
