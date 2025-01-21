@@ -7,7 +7,7 @@ import numpy as np
 from lifelines import CoxPHFitter
 from lifelines.datasets import load_rossi
 import matplotlib.pyplot as plt
-from fedstats.aggregation import MetaAnalysisAggregatorCollection
+from fedstats.aggregation.meta_analysis import MetaAnalysisAggregatorCollection
 
 def load_split_data(num_clients=2, random_state=42):
     data = load_rossi()
