@@ -7,6 +7,14 @@ This repo is a collection of code that should be integrated into FLAME in the fu
 
 - `examples` contains examples. Currently only aggregation via meta analysis is implemented.
 - `fedstats` contains the code.
+  - `aggregation` module with for aggregation methods.
+
+  Inherits from abstract class in `aggregator.py` 
+
+  Currently, implemented methods are:
+    - Meta analysis aggregation -> Weighting the local results by it's variance.
+    - Average aggregation -> Weighting by number of samples (no confidence intervals)
+
 
 ## Contribute
 
