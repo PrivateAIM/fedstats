@@ -4,6 +4,7 @@ Simple example on how to aggregate one single statistical estimator using a simp
 import argparse
 import numpy as np
 from fedstats.aggregation.meta_analysis import MetaAnalysisAggregator 
+from fedstats.aggregation.average import AverageAggregator 
 import scipy.stats as stats
 
 
@@ -26,16 +27,35 @@ def run_local_model(n, seed):
 
 def main(num_clients, num_obs_each, seed):
     rng = np.random.default_rng(seed)
-    seeds = rng.integers(0, 99999, size=num_obs_each)
+    seeds = rng.integers(0, 99999, size=num_clients)
     res = [run_local_model(num_obs_each, seed) for seed in seeds]
+
+    # aggregation via meta analysis
     meta_analysis = MetaAnalysisAggregator(res)
     meta_analysis.aggregate_results()
-    results = meta_analysis.get_results()
+    results_ma = meta_analysis.get_results()
+
+
+    # aggregation via average
+    # modify results: overwrite standard errors with sample size
+    res2 = [(res_k[0], num_obs_each) for res_k in res]
+    average_agg = AverageAggregator(res2)
+    average_agg.aggregate_results()
+    results_avg = average_agg.get_results()
+
+
+    print("=============Results=============")
+    print("Results using meta analysis")
     print(f"Aggregated Results calculated on {num_clients} clients:")
-    print(f"Aggregated effect: {results['aggregated_results']:.4f}")
-    print(f"95% Confidence Interval: ({results['confidence_interval'][0]:.4f}, {results['confidence_interval'][1]:.4f})")
+    print(f"Aggregated effect: {results_ma['aggregated_results']:.4f}")
+    print(f"95% Confidence Interval: ({results_ma['confidence_interval'][0]:.4f}, {results_ma['confidence_interval'][1]:.4f})")  # type: ignore
     # print(f"Q-Statistic (Heterogeneity): {results['q_statistic']:.4f}")
 
+    print("\n")
+
+    print("Results using average")
+    print(f"Aggregated Results calculated on {num_clients} clients:")
+    print(f"Aggregated effect: {results_avg['aggregated_results']:.4f}")
 
 
 
