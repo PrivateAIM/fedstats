@@ -63,6 +63,8 @@ class AverageAggregatorUnit:
         """
         self.calculate_pooled_effect_size()
         # TODO: self.calculate_confidence_interval()   --> search literature for method or just use CLT properties if nothing is there
+        # Good idea: make basically a fedAvg formula for the variance, i.e. something like instead of 1/(n-1) \sum (x_i-mu_x) with appripriate weights n_s/n
+        # Also look here (attention! qestion is for a SEQUENCE a): https://math.stackexchange.com/questions/3135950/central-limit-theorem-for-weighted-average
 
 
     def get_results(self) -> dict[str, tuple[float, float] | float]:
