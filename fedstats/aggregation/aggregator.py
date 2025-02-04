@@ -1,7 +1,7 @@
-
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Union, Dict
 import numpy as np
+
 
 # Abstract class for aggregation methods
 class Aggregator(ABC):
@@ -21,11 +21,14 @@ class Aggregator(ABC):
         pass
 
     @abstractmethod
-    def get_results(self, *args, **kwargs) -> Union[Dict[str, np.ndarray], Dict[str, Union[float, Tuple[float, float]]]]:  # pragma: no cover
+    def get_results(
+        self, *args, **kwargs
+    ) -> Union[
+        Dict[str, np.ndarray], Dict[str, Union[float, Tuple[float, float]]] | tuple
+    ]:  # pragma: no cover
         """
         Abstract method to return aggregated results.
 
         :return: Aggregated results.
         """
         pass
-
