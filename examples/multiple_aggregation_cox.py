@@ -3,7 +3,6 @@ Example to run Cox proportional Hazard model and aggregate estimators using Meta
 """
 
 import argparse
-from datetime import datetime
 import numpy as np
 from lifelines import CoxPHFitter
 from lifelines.datasets import load_rossi
