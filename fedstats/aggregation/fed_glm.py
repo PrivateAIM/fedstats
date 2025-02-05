@@ -16,7 +16,7 @@ class FedGLM(Aggregator):
         self.coefs = np.array(np.inf)  # TODO: Make a better solution for init
         self.iter = 0
 
-    def set_results(self, results: tuple[np.ndarray, np.ndarray]) -> None:
+    def set_results(self, results: list[tuple[np.ndarray, np.ndarray]]) -> None:
         self.results = results
 
     def aggregate_results(self, calc_info: bool = False) -> None:
@@ -35,18 +35,20 @@ class FedGLM(Aggregator):
         if calc_info:
             self.calc_info(fisher_info_agg, coefs)
 
-    def check_convergence(self, coefs_old, coefs_new, tol: float = 1e-6) -> bool:
+    def check_convergence(
+        self, coefs_old: np.ndarray, coefs_new: np.ndarray, tol: float = 1e-6
+    ) -> bool:
         if self.iter == 0:
             return False
         return np.linalg.norm(coefs_new - coefs_old, ord=2).item() < tol
 
-    def get_results(self) -> tuple[np.ndarray, np.ndarray]:
+    def get_results(self) -> list[tuple[np.ndarray, np.ndarray]]:
         return self.results
 
     def get_coefs(self) -> np.ndarray:
         return self.coefs
 
-    def calc_info(self, Fisher_info, beta):
+    def calc_info(self, Fisher_info: np.ndarray, beta: np.ndarray):
         covariance_matrix = np.linalg.inv(Fisher_info)
         se_beta = np.sqrt(np.diag(covariance_matrix))
 

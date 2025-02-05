@@ -1,5 +1,51 @@
 import numpy as np
+from scipy.special import expit  # Sigmoid function for logistic regression
 import matplotlib.pyplot as plt
+from datetime import datetime
+
+
+def split_data(
+    X: np.ndarray, y: np.ndarray, num_clients: int = 5, random_state: int = 42
+) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    """
+    Function to split np arrays X and y into num_clients parts.
+    """
+    n, p = X.shape
+    rng = np.random.default_rng(random_state)
+    index = np.arange(n)
+    rng.shuffle(index)
+    X = X[index, :]
+    y = y[index]
+    return np.array_split(X, num_clients), np.array_split(y, num_clients)
+
+
+def simulate_logistic_regression(n: int = 500, p: int = 3) -> tuple:
+    """Simulate logistic regression data."""
+    np.random.seed(42)
+    X = np.random.randn(n, p)
+    beta_true = np.random.randn(p)
+    logits = X @ beta_true
+    y = np.random.binomial(1, expit(logits))
+    return split_data(X, y)
+
+
+def simulate_poisson_regression(n=500, p=3):
+    """Simulate Poisson regression data."""
+    np.random.seed(42)
+    X = np.random.randn(n, p)
+    beta_true = np.random.randn(p)
+    log_lambda = X @ beta_true
+    y = np.random.poisson(np.exp(log_lambda))
+    return split_data(X, y)
+
+
+def simulate_gaussian_regression(n=500, p=3, noise_std=1.0):
+    """Simulate linear regression data."""
+    np.random.seed(42)
+    X = np.random.randn(n, p)
+    beta_true = np.random.randn(p)
+    y = X @ beta_true + np.random.normal(0, noise_std, size=n)
+    return split_data(X, y)
 
 
 def plot_forest(

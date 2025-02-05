@@ -24,7 +24,8 @@ class Aggregator(ABC):
     def get_results(
         self, *args, **kwargs
     ) -> Union[
-        Dict[str, np.ndarray], Dict[str, Union[float, Tuple[float, float]]] | tuple
+        Dict[str, np.ndarray],
+        Dict[str, Union[float, Tuple[float, float]]] | tuple | list,
     ]:  # pragma: no cover
         """
         Abstract method to return aggregated results.
