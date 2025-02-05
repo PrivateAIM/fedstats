@@ -19,6 +19,8 @@ This repo is a collection of code that should be integrated into FLAME in the fu
 - aggregation methods:
   - Meta analysis aggregation -> Weighting the local results by it's variance.
   - Average aggregation -> Weighting by number of samples (no confidence intervals).
+  - Federated GLM example with logistic regression
+
 - models
   - linear regression -> wraps standard model such that results can be directly used by an aggregator.
 
