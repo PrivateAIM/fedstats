@@ -19,14 +19,15 @@ def split_data(
     return np.array_split(X, num_clients), np.array_split(y, num_clients)
 
 
-def simulate_logistic_regression(n: int = 500, p: int = 3) -> tuple:
+def simulate_logistic_regression(random_state: int, n: int = 500, p: int = 3) -> tuple:
     """Simulate logistic regression data."""
-    np.random.seed(42)
-    X = np.random.randn(n, p)
-    beta_true = np.random.randn(p)
+    rng = np.random.default_rng(random_state)
+    X = rng.normal(size=(n, p))
+    beta_true = rng.normal(size=p)
     logits = X @ beta_true
-    y = np.random.binomial(1, expit(logits))
-    return split_data(X, y)
+    y = rng.binomial(1, expit(logits))
+    rstate = rng.integers(0, 10000)
+    return split_data(X, y, random_state=rstate)
 
 
 def simulate_poisson_regression(n=500, p=3):

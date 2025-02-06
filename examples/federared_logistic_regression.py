@@ -1,3 +1,4 @@
+import pprint
 import numpy as np
 import statsmodels.api as sm
 from fedstats.aggregation.fed_glm import FedGLM
@@ -29,17 +30,25 @@ def fit_model_logistic_federated(X, y, max_iter=100):
         # send new coefs to local models
         for state in local_states:
             state.set_coefs(b_new)
-    return glm.get_coefs()
+    return glm.get_summary()
 
 
 def fit_full_comparison_model(X, y):
     X_full = np.concatenate(X)
     y_full = np.concatenate(y)
     mod_fit = sm.GLM(y_full, X_full, family=sm.families.Binomial()).fit()
-    return mod_fit.params
+    return dict(
+        coef=mod_fit.params, se=mod_fit.bse, z=mod_fit.tvalues, p=mod_fit.pvalues
+    )
 
 
 def main():
-    X, y = simulate_logistic_regression(500)
-    print("Coefs on full data:", fit_full_comparison_model(X, y))
-    print("Estimated coefficients:", fit_model_logistic_federated(X, y))
+    X, y = simulate_logistic_regression(random_state=42, n=500)
+    print("=== Results on full data ===")
+    pprint.pprint(fit_full_comparison_model(X, y))
+    print("\n \n=== Results federated ===")
+    pprint.pprint(fit_model_logistic_federated(X, y))
+
+
+if __name__ == "__main__":
+    main()
