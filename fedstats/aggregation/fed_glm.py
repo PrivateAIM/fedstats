@@ -9,6 +9,8 @@ class FedGLM(Aggregator):
         """
         Handels aggregation for of GLM fisher scorings
 
+        Idea is from: https://www.mdpi.com/1999-4893/15/7/243
+
         :param results: A list of np.arrays that represent local results from calcualte_fisher_scoring_parts
         """
 
@@ -23,17 +25,17 @@ class FedGLM(Aggregator):
         fisher_infos = [res[0] for res in self.results]
         rhss = [res[1] for res in self.results]
 
-        fisher_info_agg = reduce(lambda x, y: x + y, fisher_infos)
-        rhs_agg = reduce(lambda x, y: x + y, rhss)
+        self.fisher_info_agg = reduce(lambda x, y: x + y, fisher_infos)
+        self.rhs_agg = reduce(lambda x, y: x + y, rhss)
         try:
-            coefs = np.linalg.solve(fisher_info_agg, rhs_agg)
+            coefs = np.linalg.solve(self.fisher_info_agg, self.rhs_agg)
         except np.linalg.LinAlgError:
-            coefs = np.linalg.pinv(fisher_info_agg) @ rhs_agg
+            coefs = np.linalg.pinv(self.fisher_info_agg) @ self.rhs_agg
         self.coefs = coefs
         self.iter += 1
 
         if calc_info:
-            self.calc_info(fisher_info_agg, coefs)
+            self.calc_info()
 
     def check_convergence(
         self, coefs_old: np.ndarray, coefs_new: np.ndarray, tol: float = 1e-6
@@ -48,10 +50,15 @@ class FedGLM(Aggregator):
     def get_coefs(self) -> np.ndarray:
         return self.coefs
 
-    def calc_info(self, Fisher_info: np.ndarray, beta: np.ndarray):
-        covariance_matrix = np.linalg.inv(Fisher_info)
-        se_beta = np.sqrt(np.diag(covariance_matrix))
+    def calc_info(self) -> None:
+        self.info_calculated = True
+        covariance_matrix = np.linalg.inv(self.fisher_info_agg)
+        self.se_coefs = np.sqrt(np.diag(covariance_matrix))
 
         # Compute Wald z-scores and p-values:
-        self.z_scores = beta / se_beta
+        self.z_scores = self.coefs / self.se_coefs
         self.p_values = 2 * (1 - norm.cdf(np.abs(self.z_scores)))
+
+    def get_summary(self) -> dict:
+        self.calc_info()
+        return dict(coef=self.coefs, se=self.se_coefs, z=self.z_scores, p=self.p_values)

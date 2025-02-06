@@ -45,12 +45,13 @@ class LocalFisherScoring:
         self.beta = coefs
 
     def calc_fisher_scoring_parts(
-        self,
+        self, verbose: bool = False
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Returns a new array with beta coefs
         """
-        print(f"Calculating iteration {self.iter}...")
+        if verbose:
+            print(f"Calculating iteration {self.iter}...")
         # Get family-specific functions once:
         eta = self.X @ self.beta
         # Evaluate family-specific functions:
