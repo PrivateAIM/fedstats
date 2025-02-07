@@ -50,7 +50,7 @@ class LocalFisherScoring:
         """
         Returns a new array with beta coefs
         """
-        if verbose:
+        if verbose:  # pragma: no cover
             print(f"Calculating iteration {self.iter}...")
         # Get family-specific functions once:
         eta = self.X @ self.beta
