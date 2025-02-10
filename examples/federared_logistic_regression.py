@@ -9,7 +9,7 @@ np.random.seed(42)
 
 
 def fit_model_logistic_federated(X, y, max_iter=100):
-    glm = FedGLM([])
+    glm = FedGLM()
 
     # init local models using default of 5 clients
     local_states = [
