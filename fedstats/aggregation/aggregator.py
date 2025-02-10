@@ -5,7 +5,7 @@ import numpy as np
 
 # Abstract class for aggregation methods
 class Aggregator(ABC):
-    def __init__(self, results: Union[List[Tuple], List[List[Tuple]]]) -> None:
+    def __init__(self, results: Union[List[Tuple], List[List[Tuple]], None]) -> None:
         """
         Initialize the aggregator with results.
 

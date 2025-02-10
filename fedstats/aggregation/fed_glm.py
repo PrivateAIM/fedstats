@@ -1,11 +1,12 @@
 import numpy as np
 from scipy.stats import norm
 from functools import reduce
+from typing import Union
 from fedstats.aggregation.aggregator import Aggregator
 
 
 class FedGLM(Aggregator):
-    def __init__(self, results: list) -> None:
+    def __init__(self, results: Union[list, None] = None) -> None:
         """
         Handels aggregation for of GLM fisher scorings
 
