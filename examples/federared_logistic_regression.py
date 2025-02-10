@@ -1,19 +1,18 @@
 import pprint
 import numpy as np
 import statsmodels.api as sm
-from fedstats.aggregation.fed_glm import FedGLM
-from fedstats.models.local_fisher_scoring import LocalFisherScoring
+from fedstats import FederatedGLM, PartialFisherScoring
 from fedstats.util import simulate_logistic_regression
 
 np.random.seed(42)
 
 
 def fit_model_logistic_federated(X, y, max_iter=100):
-    glm = FedGLM()
+    glm = FederatedGLM()
 
     # init local models using default of 5 clients
     local_states = [
-        LocalFisherScoring(X[k], y[k], "binomial", fit_intercept=False)
+        PartialFisherScoring(X[k], y[k], "binomial", fit_intercept=False)
         for k in range(5)
     ]
     for i in range(max_iter):

@@ -1,11 +1,11 @@
 """
 Simple example on how to aggregate one single statistical estimator using a simple linear regression
 """
+
 import argparse
 import numpy as np
-from fedstats.aggregation.meta_analysis import MetaAnalysisAggregator 
-from fedstats.aggregation.average import AverageAggregator 
 import scipy.stats as stats
+from fedstats import MetaAnalysisAggregation, AverageAggregation
 
 
 def make_local_data(n, seed):
@@ -16,13 +16,13 @@ def make_local_data(n, seed):
 
 
 def run_regression(x, y):
-    mod = stats.linregress(x,y)
+    mod = stats.linregress(x, y)
     return mod.slope.item(), mod.stderr.item()  # type: ignore
 
 
 def run_local_model(n, seed):
-    x,y = make_local_data(n, seed)
-    return run_regression(x,y)
+    x, y = make_local_data(n, seed)
+    return run_regression(x, y)
 
 
 def main(num_clients, num_obs_each, seed):
@@ -31,24 +31,24 @@ def main(num_clients, num_obs_each, seed):
     res = [run_local_model(num_obs_each, seed) for seed in seeds]
 
     # aggregation via meta analysis
-    meta_analysis = MetaAnalysisAggregator(res)
+    meta_analysis = MetaAnalysisAggregation(res)
     meta_analysis.aggregate_results()
     results_ma = meta_analysis.get_results()
-
 
     # aggregation via average
     # modify results: overwrite standard errors with sample size
     res2 = [(res_k[0], num_obs_each) for res_k in res]
-    average_agg = AverageAggregator(res2)
+    average_agg = AverageAggregation(res2)
     average_agg.aggregate_results()
     results_avg = average_agg.get_results()
-
 
     print("=============Results=============")
     print("Results using meta analysis")
     print(f"Aggregated Results calculated on {num_clients} clients:")
     print(f"Aggregated effect: {results_ma['aggregated_results']:.4f}")
-    print(f"95% Confidence Interval: ({results_ma['confidence_interval'][0]:.4f}, {results_ma['confidence_interval'][1]:.4f})")  # type: ignore
+    print(
+        f"95% Confidence Interval: ({results_ma['confidence_interval'][0]:.4f}, {results_ma['confidence_interval'][1]:.4f})"
+    )  # type: ignore
     # print(f"Q-Statistic (Heterogeneity): {results['q_statistic']:.4f}")
 
     print("\n")
@@ -58,14 +58,12 @@ def main(num_clients, num_obs_each, seed):
     print(f"Aggregated effect: {results_avg['aggregated_results']:.4f}")
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Number of clients and observations.")
     parser.add_argument("--clients", type=int, default=5, help="Number of clients.")
-    parser.add_argument("--obs", type=int, default=100, help="Number of observations at each client.")
+    parser.add_argument(
+        "--obs", type=int, default=100, help="Number of observations at each client."
+    )
     parser.add_argument("--seed", type=int, default=42, help="Seed to generate data.")
     args = parser.parse_args()
     main(args.clients, args.obs, args.seed)
-
-
-

@@ -2,8 +2,7 @@ import argparse
 import numpy as np
 import statsmodels.api as sm
 from sklearn.datasets import fetch_california_housing
-from fedstats.models.local_linear_regression import LocalLinearRegression
-from fedstats.aggregation.meta_analysis import MetaAnalysisAggregator
+from fedstats import MetaAnalysisAggregation, LinearRegression
 from fedstats.util import plot_forest
 
 
@@ -23,7 +22,7 @@ def load_split_data(num_clients=5, random_state=42):
 
 
 def fit_local_model(X, y):
-    reg = LocalLinearRegression(X, y)
+    reg = LinearRegression(X, y)
     reg.fit()
     return reg.get_result()
 
@@ -36,7 +35,7 @@ def main(save_plot=False):
     results_nodes = list(map(lambda tup: fit_local_model(*tup), local_datasets))
 
     # aggregate results
-    agg = MetaAnalysisAggregator(results_nodes)
+    agg = MetaAnalysisAggregation(results_nodes)
     agg.aggregate_results()
     results_agg = agg.get_results()
 

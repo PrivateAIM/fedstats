@@ -7,7 +7,7 @@ import numpy as np
 from lifelines import CoxPHFitter
 from lifelines.datasets import load_rossi
 import matplotlib.pyplot as plt
-from fedstats.aggregation.meta_analysis import MetaAnalysisAggregatorCollection
+from fedstats import MetaAnalysisAggregation
 from fedstats.util import plot_forest
 
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     results = list(map(apply_cox, datasets))
 
     # Aggregation via meta analysis approach
-    aggregator = MetaAnalysisAggregatorCollection(results)
+    aggregator = MetaAnalysisAggregation(results)
     aggregator.aggregate_results()
     results_agg = aggregator.get_results()
 
