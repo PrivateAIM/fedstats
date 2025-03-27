@@ -1,0 +1,72 @@
+from .aggregator import Aggregator
+from scipy.stats import combine_pvalues, norm
+
+import numpy as np
+
+class FisherAggregator(Aggregator):
+    """
+    Aggregates local (estimate, stddev) results by converting them to p-values
+    and combining with Fisher's method.
+    """
+    def __init__(self, results=None):
+        if results is None:
+            results = []
+        super().__init__(results)
+
+    def aggregate(self, local_results, verbose=False):
+        """
+        local_results: List of (estimate, stddev) tuples from each site.
+        Returns a single combined p-value.
+        """
+        p_values = []
+        for i, (est, sd) in enumerate(local_results):
+            p_val = np.clip(self._estimate_to_pvalue(est, sd), 1e-16, 1.0)
+            if verbose:
+                print(f"Site {i} local p-value: {p_val}")
+            p_values.append(p_val)
+        _, combined_p_value = combine_pvalues(p_values, method='fisher')
+        return combined_p_value
+
+    def aggregate_results(self, results):
+        """
+        Computes and stores the aggregated result.
+        """
+        self._aggregated = self.aggregate(results)
+        return self._aggregated
+
+    def get_results(self):
+        """
+        Returns the stored aggregated result.
+        """
+        if hasattr(self, '_aggregated'):
+            return self._aggregated
+        else:
+            raise ValueError("No aggregated result computed. Call aggregate_results first.")
+
+    @staticmethod
+    def _estimate_to_pvalue(estimate, stddev):
+        """
+        Convert estimate/stddev to a two-sided p-value using z-scores.
+        Works for both scalars and numpy arrays.
+        """
+        import numpy as np
+
+        # Ensure inputs are numpy arrays
+        estimate = np.asarray(estimate)
+        stddev = np.asarray(stddev)
+
+        # Avoid division by zero: temporarily set zeros to nan
+        safe_stddev = np.where(stddev == 0, np.nan, stddev)
+
+        # Compute z-scores elementwise
+        z_score = estimate / safe_stddev
+
+        # Compute two-sided p-values
+        p_val = 2.0 * (1.0 - norm.cdf(np.abs(z_score)))
+
+        # Wherever stddev was zero, override p-value to 1.0
+        p_val = np.where(np.isnan(z_score), 1.0, p_val)
+
+        # If the result is a single element, return it as a scalar
+        return p_val.item() if p_val.size==1 else p_val
+
