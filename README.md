@@ -8,7 +8,7 @@ This repo is a collection of code that should be integrated into FLAME in the fu
 
 - `examples` contains example usage.
 - `fedstats` contains the code.
-  - `aggregation` module with for aggregation methods.
+  - `aggregation` module is used for aggregation methods.
   - `models` statistical models that can be used with the aggregators.
 
   Inherits from abstract class in `aggregator.py`
@@ -17,12 +17,12 @@ This repo is a collection of code that should be integrated into FLAME in the fu
 ## Currently, implemented methods are
 
 - aggregation methods:
-  - Meta analysis aggregation -> Weighting the local results by it's variance.
+  - Meta-analysis aggregation -> Weighting the local results by its variance.
   - Average aggregation -> Weighting by number of samples (no confidence intervals).
   - Federated GLM example with logistic regression
 
 - models
-  - linear regression -> wraps standard model such that results can be directly used by an aggregator.
+  - linear regression -> wraps standard model such that an aggregator can directly use results.
 
 ## Contribute
 
