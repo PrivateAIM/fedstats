@@ -25,7 +25,7 @@ class Aggregator(ABC):
         self, *args, **kwargs
     ) -> Union[
         Dict[str, np.ndarray],
-        Dict[str, Union[float, Tuple[float, float]]] | tuple | list,
+        Dict[str, Union[float, Tuple[float, float]]] | tuple | list | float,
     ]:  # pragma: no cover
         """
         Abstract method to return aggregated results.

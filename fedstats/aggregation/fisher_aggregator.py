@@ -6,40 +6,37 @@ import numpy as np
 class FisherAggregator(Aggregator):
     """
     Aggregates local (estimate, stddev) results by converting them to p-values
-    and combining with Fisher's method.
+    and combining with Fisher's method in the scipy implementation.
+    The final result is a single combined p-value.
+
+    :param results: A list of tuples (estimate, stddev) from each site.
     """
-    def __init__(self, results=None):
-        if results is None:
-            results = []
+    def __init__(self, results: list[tuple]):
         super().__init__(results)
 
-    def aggregate(self, local_results, verbose=False):
+    def aggregate_results(self, verbose=False):
         """
-        local_results: List of (estimate, stddev) tuples from each site.
-        Returns a single combined p-value.
+        Computes a single combined p-value.
         """
+        if not self.results:
+            raise ValueError("No results to aggregate.")
+
         p_values = []
-        for i, (est, sd) in enumerate(local_results):
+        for i, (est, sd) in enumerate(self.results):
             p_val = np.clip(self._estimate_to_pvalue(est, sd), 1e-16, 1.0)
             if verbose:
                 print(f"Site {i} local p-value: {p_val}")
             p_values.append(p_val)
         _, combined_p_value = combine_pvalues(p_values, method='fisher')
-        return combined_p_value
+        self.combined_p_value = combined_p_value
 
-    def aggregate_results(self, results):
-        """
-        Computes and stores the aggregated result.
-        """
-        self._aggregated = self.aggregate(results)
-        return self._aggregated
 
-    def get_results(self):
+    def get_aggregated_results(self) -> float:
         """
         Returns the stored aggregated result.
         """
-        if hasattr(self, '_aggregated'):
-            return self._aggregated
+        if hasattr(self, 'combined_p_value'):
+            return self.combined_p_value
         else:
             raise ValueError("No aggregated result computed. Call aggregate_results first.")
 
