@@ -1,6 +1,6 @@
 # Federated statistics WP1
 
-![CI](https://github.com/RaphaelRe/fedstats/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/PrivateAIM/fedstats/actions/workflows/ci.yml/badge.svg)
 
 This repo is a collection of code that should be integrated into FLAME in the future.
 
@@ -27,5 +27,5 @@ This repo is a collection of code that should be integrated into FLAME in the fu
 ## Contribute
 
 - The repo uses poetry. Assuming you have installed poetry: Clone the repo and type `poetry install`.
-- Activate the environment with `poetry shell`.
-- testing is done with pytest-module.
+- Activate the environment with `poetry env activate`.
+- Testing is done with pytest: `poetry run pytest tests/`.
