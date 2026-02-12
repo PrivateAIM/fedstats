@@ -17,6 +17,6 @@ def test_aggregator_unit():
     # agg.get_results() 
     
     assert isinstance(agg, Aggregator)
-    assert isinstance(agg.results, list)
+    assert isinstance(agg.node_results, list)
 
     

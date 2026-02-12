@@ -2,7 +2,7 @@ import numpy as np
 from fedstats.aggregation.aggregator import Aggregator
 
 class AverageAggregator(Aggregator):
-    def __init__(self, results: list) -> None:
+    def __init__(self, node_results: list) -> None:
         """
         Wrapper class to handle aggregation via Average
 
@@ -11,15 +11,15 @@ class AverageAggregator(Aggregator):
         :param results: A list of tuples or a list of lists of tuples. See subclasses for more.
         """
 
-        super().__init__(results)
+        super().__init__(node_results)
         self.isunit = self.check_input()
         aggregator = AverageAggregatorUnit if self.isunit else AverageAggregatorCollection
-        self.aggregator = aggregator(results)
+        self.aggregator = aggregator(node_results)
 
     def check_input(self) -> bool:
-        if all(isinstance(item, tuple) for item in self.results):
+        if all(isinstance(item, tuple) for item in self.node_results):
             return True 
-        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.results):
+        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.node_results):
             return False
         else:
             raise TypeError("Input should be either a list of tuples, or a list of list of tuples.")
@@ -29,22 +29,22 @@ class AverageAggregator(Aggregator):
         self.aggregator.aggregate_results()
 
 
-    def get_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
+    def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
         return self.aggregator.get_results()
 
 
 
 
 class AverageAggregatorUnit:
-    def __init__(self, results: list[tuple[float, int]]) -> None:
+    def __init__(self, node_results: list[tuple[float, int]]) -> None:
         """
         AverageAggregator can be used to aggregate K single effect sizes. Either weighted by sample size.
 
         :param results: A list containing K tuples of length 2. First element is the effect size, the second the sample size,
         """
-        self.results = results
-        self.K = len(results)
-        self.effect_sizes, self.n_samples = map(lambda x: np.array(x), zip(*results))
+        self.node_results = node_results
+        self.K = len(node_results)
+        self.effect_sizes, self.n_samples = map(lambda x: np.array(x), zip(*node_results))
         self.weights = self.n_samples / self.n_samples.sum()
 
 
@@ -84,7 +84,7 @@ class AverageAggregatorUnit:
 
 
 class AverageAggregatorCollection:
-    def __init__(self, results: list[list[tuple[float, int]]]):
+    def __init__(self, node_results: list[list[tuple[float, int]]]):
         """
         AverageAggregatorCollection is a wrapper of AverageAggregatorUnit for multiple effect sizes.
 
@@ -102,10 +102,10 @@ class AverageAggregatorCollection:
             ... ]
 
         """
-        self.results = results
-        self.K = len(results)
+        self.node_results = node_results
+        self.K = len(node_results)
 
-        self.aggregator_units= [(AverageAggregatorUnit([est[p] for est in results])) for p in range(len(results[0]))]
+        self.aggregator_units= [(AverageAggregatorUnit([est[p] for est in node_results])) for p in range(len(node_results[0]))]
 
 
     def calculate_pooled_effect_size(self) -> None:

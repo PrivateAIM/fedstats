@@ -13,7 +13,7 @@ def test_aggregator_unit():
                ] 
     meta_analysis = MetaAnalysisAggregatorUnit(results)
     meta_analysis.aggregate_results(calculate_heterogeneity=True)
-    agg_res = meta_analysis.get_results()
+    agg_res = meta_analysis.get_aggregated_results()
     
     var_agg = 1 / (1 / 0.1 * 4)  # Variance of pooled effect size
     assert np.allclose(2.5, agg_res["aggregated_results"])  # Check pooled effect size
@@ -35,7 +35,7 @@ def test_aggregator_collection():
 
     collection = MetaAnalysisAggregatorCollection(results)
     collection.aggregate_results(calculate_heterogeneity=True)
-    agg_res = collection.get_results()
+    agg_res = collection.get_aggregated_results()
 
     # Expected pooled results
     expected_effects = [2.5] * 2
@@ -57,7 +57,7 @@ def test_meta_analysis_aggregator():
     aggregator_unit = MetaAnalysisAggregator(unit_results)
     assert aggregator_unit.isunit is True  # Verify it's treated as a unit
     aggregator_unit.aggregate_results(calculate_heterogeneity=True)
-    agg_res_unit = aggregator_unit.get_results()
+    agg_res_unit = aggregator_unit.get_aggregated_results()
     
     var_agg_unit = 1 / (1 / 0.1 * 4)
     assert np.allclose(2.5, agg_res_unit["aggregated_results"])
@@ -74,7 +74,7 @@ def test_meta_analysis_aggregator():
     aggregator_collection = MetaAnalysisAggregator(collection_results)
     assert aggregator_collection.isunit is False  # Verify it's treated as a collection
     aggregator_collection.aggregate_results(calculate_heterogeneity=True)
-    agg_res_collection = aggregator_collection.get_results()
+    agg_res_collection = aggregator_collection.get_aggregated_results()
 
     expected_effects = [2.5] * 2
     expected_variances = [1 / (1 / 0.1 * 4)] * 2  # Same for both effect sizes

@@ -33,14 +33,14 @@ def main(num_clients, num_obs_each, seed):
     # aggregation via meta analysis
     meta_analysis = MetaAnalysisAggregation(res)
     meta_analysis.aggregate_results()
-    results_ma = meta_analysis.get_results()
+    results_ma = meta_analysis.get_aggregated_results()
 
     # aggregation via average
     # modify results: overwrite standard errors with sample size
     res2 = [(res_k[0], num_obs_each) for res_k in res]
     average_agg = AverageAggregation(res2)
     average_agg.aggregate_results()
-    results_avg = average_agg.get_results()
+    results_avg = average_agg.get_aggregated_results()
 
     print("=============Results=============")
     print("Results using meta analysis")

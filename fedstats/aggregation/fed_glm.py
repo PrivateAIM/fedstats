@@ -1,12 +1,12 @@
 import numpy as np
 from scipy.stats import norm
 from functools import reduce
-from typing import Union
+from typing import Dict, Tuple, Union
 from fedstats.aggregation.aggregator import Aggregator
 
 
 class FedGLM(Aggregator):
-    def __init__(self, results: Union[list, None] = None) -> None:
+    def __init__(self, node_results: Union[list, None] = None) -> None:
         """
         Handels aggregation for of GLM fisher scorings
 
@@ -15,16 +15,16 @@ class FedGLM(Aggregator):
         :param results: A list of np.arrays that represent local results from calcualte_fisher_scoring_parts
         """
 
-        super().__init__(results)
+        super().__init__(node_results)
         self.coefs = np.array(np.inf)  # TODO: Make a better solution for init
         self.iter = 0
 
-    def set_results(self, results: list[tuple[np.ndarray, np.ndarray]]) -> None:
-        self.results = results
+    def set_node_results(self, node_results: list[tuple[np.ndarray, np.ndarray]]) -> None:
+        self.node_results = node_results
 
     def aggregate_results(self, calc_info: bool = False) -> None:
-        fisher_infos = [res[0] for res in self.results]
-        rhss = [res[1] for res in self.results]
+        fisher_infos = [res[0] for res in self.node_results]
+        rhss = [res[1] for res in self.node_results]
 
         self.fisher_info_agg = reduce(lambda x, y: x + y, fisher_infos)
         self.rhs_agg = reduce(lambda x, y: x + y, rhss)
@@ -45,8 +45,23 @@ class FedGLM(Aggregator):
             return False
         return np.linalg.norm(coefs_new - coefs_old, ord=2).item() < tol
 
-    def get_results(self) -> list[tuple[np.ndarray, np.ndarray]]:
-        return self.results
+    def get_node_results(self) -> list[tuple[np.ndarray, np.ndarray]]:
+        return self.node_results
+    
+    def get_aggregated_results(self) -> Dict[str, np.ndarray]:
+        if self.iter == 0:
+            raise ValueError("No aggregated results available. Please run aggregate_results first.")
+
+        res = {
+            "coef": self.coefs,
+        }
+        if hasattr(self, "se_coefs"):
+            res["se"] = self.se_coefs
+        if hasattr(self, "z_scores"):
+            res["z"] = self.z_scores
+        if hasattr(self, "p_values"):
+            res["p"] = self.p_values
+        return res
 
     def get_coefs(self) -> np.ndarray:
         return self.coefs

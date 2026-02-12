@@ -11,18 +11,18 @@ class FisherAggregator(Aggregator):
 
     :param results: A list of tuples (estimate, stddev) from each site.
     """
-    def __init__(self, results: list[tuple]):
-        super().__init__(results)
+    def __init__(self, node_results: list[tuple]):
+        super().__init__(node_results)
 
     def aggregate_results(self, verbose=False):
         """
         Computes a single combined p-value.
         """
-        if not self.results:
+        if not self.node_results:
             raise ValueError("No results to aggregate.")
 
         p_values = []
-        for i, (est, sd) in enumerate(self.results):
+        for i, (est, sd) in enumerate(self.node_results):
             p_val = np.clip(self._estimate_to_pvalue(est, sd), 1e-16, 1.0)
             if verbose:
                 print(f"Site {i} local p-value: {p_val}")

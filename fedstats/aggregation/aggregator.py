@@ -5,13 +5,13 @@ import numpy as np
 
 # Abstract class for aggregation methods
 class Aggregator(ABC):
-    def __init__(self, results: Union[List[Tuple], List[List[Tuple]], None]) -> None:
+    def __init__(self, node_results: Union[List[Tuple], List[List[Tuple]], None]) -> None:
         """
         Initialize the aggregator with results.
 
         :param results: A list of tuples or a list of lists of tuples.
         """
-        self.results = results
+        self.node_results = node_results
 
     @abstractmethod
     def aggregate_results(self, *args, **kwargs) -> None:  # pragma: no cover
@@ -21,7 +21,7 @@ class Aggregator(ABC):
         pass
 
     @abstractmethod
-    def get_results(
+    def get_aggregated_results(
         self, *args, **kwargs
     ) -> Union[
         Dict[str, np.ndarray],

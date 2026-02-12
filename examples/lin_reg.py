@@ -37,7 +37,7 @@ def main(save_plot=False):
     # aggregate results
     agg = MetaAnalysisAggregation(results_nodes)
     agg.aggregate_results()
-    results_agg = agg.get_results()
+    results_agg = agg.get_aggregated_results()
 
     # compare with regression on global data
     housing = fetch_california_housing()

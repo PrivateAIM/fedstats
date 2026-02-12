@@ -6,7 +6,7 @@ from fedstats.aggregation.fed_glm import FedGLM
 
 def test_fedglm_initialization():
     model = FedGLM()
-    assert model.results is None
+    assert model.node_results is None
     assert np.isinf(model.coefs).all()
     assert model.iter == 0
 
@@ -14,8 +14,8 @@ def test_fedglm_initialization():
 def test_set_results():
     results = [(np.array([[1, 2], [3, 4]]), np.array([1, 0]))]
     model = FedGLM()
-    model.set_results(results)
-    assert model.results == results
+    model.set_node_results(results)
+    assert model.node_results == results
 
 
 def test_aggregate_results():
@@ -58,7 +58,7 @@ def test_check_convergence_first_iter():
 def test_get_results():
     results = [(np.array([[1, 2], [3, 4]]), np.array([1, 0]))]
     model = FedGLM(results)
-    assert model.get_results() == results
+    assert model.get_node_results() == results
 
 
 def test_get_coefs():
@@ -89,3 +89,19 @@ def test_get_summary():
     assert "se" in summary
     assert "z" in summary
     assert "p" in summary
+
+def test_get_aggregated_results_before_aggregation():
+    model = FedGLM([])
+    with pytest.raises(ValueError):
+        model.get_aggregated_results()
+
+def test_get_aggregated_results_after_aggregation():
+    results = [(np.array([[2.0, 0.0], [0.0, 2.0]]), np.array([2.0, 4.0]))]
+    model = FedGLM(results)
+    model.aggregate_results(calc_info=True)
+    agg_results = model.get_aggregated_results()
+    assert "coef" in agg_results
+    assert np.allclose(agg_results["coef"], model.coefs)
+    assert "se" in agg_results
+    assert "z" in agg_results
+    assert "p" in agg_results

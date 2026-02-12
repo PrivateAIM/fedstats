@@ -49,7 +49,7 @@ def test_average_aggregator():
     assert aggregator_unit.isunit is True  # Verify it's treated as a unit
 
     aggregator_unit.aggregate_results()
-    agg_res_unit = aggregator_unit.get_results()
+    agg_res_unit = aggregator_unit.get_aggregated_results()
     assert np.allclose(3., agg_res_unit["aggregated_results"])
 
     # Test as Collection
@@ -63,7 +63,7 @@ def test_average_aggregator():
     assert aggregator_collection.isunit is False  # Verify it's treated as a collection
 
     aggregator_collection.aggregate_results()
-    agg_res_collection = aggregator_collection.get_results()
+    agg_res_collection = aggregator_collection.get_aggregated_results()
     expected_effects = [3.] * 2
     assert np.allclose(agg_res_collection["aggregated_results"], expected_effects)
 

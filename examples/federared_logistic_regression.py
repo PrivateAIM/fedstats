@@ -19,7 +19,7 @@ def fit_model_logistic_federated(X, y, max_iter=100):
         # update local models, retrieve them and aggregate them
         res = list(map(lambda state: state.calc_fisher_scoring_parts(), local_states))
         b_old = glm.get_coefs()
-        glm.set_results(res)
+        glm.set_node_results(res)
         glm.aggregate_results()
         b_new = glm.get_coefs()
         converged = glm.check_convergence(b_old, b_new)

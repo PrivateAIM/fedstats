@@ -3,7 +3,9 @@ from scipy.stats import norm
 from fedstats.aggregation.aggregator import Aggregator
 
 class MetaAnalysisAggregator(Aggregator):
-    def __init__(self, results: list) -> None:
+    node_results: list[tuple[float, float]] | list[list[tuple[float, float]]]
+
+    def __init__(self, node_results: list) -> None:
         """
         Wrapper class to handle aggregation via meta analysis.
 
@@ -12,15 +14,15 @@ class MetaAnalysisAggregator(Aggregator):
         :param results: A list of tuples or a list of lists of tuples. See subclasses for more.
         """
 
-        super().__init__(results)
+        super().__init__(node_results)
         self.isunit = self.check_input()
         aggregator = MetaAnalysisAggregatorUnit if self.isunit else MetaAnalysisAggregatorCollection
-        self.aggregator = aggregator(results)
+        self.aggregator = aggregator(node_results)
 
     def check_input(self) -> bool:
-        if all(isinstance(item, tuple) for item in self.results):
+        if all(isinstance(item, tuple) for item in self.node_results):
             return True 
-        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.results):
+        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.node_results):
             return False
         else:
             raise TypeError("Input should be either a list of tuples, or a list of list of tuples.")
@@ -28,24 +30,24 @@ class MetaAnalysisAggregator(Aggregator):
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         self.aggregator.aggregate_results(calculate_heterogeneity=calculate_heterogeneity)
 
-    def get_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
-        return self.aggregator.get_results()
+    def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
+        return self.aggregator.get_aggregated_results()
 
     
 
 class MetaAnalysisAggregatorUnit:
-    def __init__(self, results: list[tuple[float, float]]) -> None:
+    def __init__(self, node_results: list[tuple[float, float]]) -> None:
         """
         MetaAnalysisAggregator can be used to aggregate K single effect sizes.
 
         Used method is a fixed effect meta analysis or also called inverse variance weights. 
         See for example Table 1 right column in https://doi.org/10.1093/bioinformatics/btq340
 
-        :param results: A list containing K tuples of length 2. First element is the effect size, the second the variance,
+        :param node_results: A list containing K tuples of length 2. First element is the effect size, the second the variance,
         """
-        self.results = results
-        self.K = len(results)
-        self.effect_sizes, self.variances = map(lambda x: np.array(x), zip(*results))
+        self.node_results = node_results
+        self.K = len(node_results)
+        self.effect_sizes, self.variances = map(lambda x: np.array(x), zip(*node_results))
         self.weights = 1 / self.variances
 
 
@@ -99,7 +101,7 @@ class MetaAnalysisAggregatorUnit:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> dict[str, tuple[float, float] | float]:
+    def get_aggregated_results(self) -> dict[str, tuple[float, float] | float]:
         """
         Get results fom the object
 
@@ -120,14 +122,14 @@ class MetaAnalysisAggregatorUnit:
 
 
 class MetaAnalysisAggregatorCollection:
-    def __init__(self, results: list[list[tuple[float, float]]]):
+    def __init__(self, node_results: list[list[tuple[float, float]]]):
         """
         MetaAnalysisAggregatorCollection is a wrapper of MetaAnalysisAggregatorUnit for multiple effect sizes.
 
         This class receives and processes estimators from $K$ servers, where each server produces a list of results.
         Each element in these lists is itself a list containing $P$ tuples, corresponding to $P$ effect sizes (effect size, variance)
 
-        :param results: A list of length K containting p lists with tuples of length 2. First element is the effect size, the second the variance,
+        :param node_results: A list of length K containting p lists with tuples of length 2. First element is the effect size, the second the variance,
 
         Example how the results from K=3 servers with P=2 effect sizes may look like. E.g. mu32 corresponds to the effect size of the 2nd estimator of sever 3.
             >>> data = [
@@ -137,10 +139,10 @@ class MetaAnalysisAggregatorCollection:
             ... ]
 
         """
-        self.results = results
-        self.K = len(results)
+        self.node_results = node_results
+        self.K = len(node_results)
 
-        self.aggregator_units= [(MetaAnalysisAggregatorUnit([est[p] for est in results])) for p in range(len(results[0]))]
+        self.aggregator_units= [(MetaAnalysisAggregatorUnit([est[p] for est in node_results])) for p in range(len(node_results[0]))]
 
 
     def calculate_pooled_effect_size(self) -> None:
@@ -192,7 +194,7 @@ class MetaAnalysisAggregatorCollection:
             self.calculate_q_statistic()
 
 
-    def get_results(self) -> dict[str, np.ndarray]:
+    def get_aggregated_results(self) -> dict[str, np.ndarray]:
         """
         Get results fom the object
         """

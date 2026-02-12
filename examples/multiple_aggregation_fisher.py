@@ -65,8 +65,10 @@ def apply_fisher(sub_datasets, verbose=False, return_local=False):
         beta, se = MyPartialFisherScoring(X=X, y=y, family='binomial', verbose=verbose)
         local_results.append((beta, se))
 
-    aggregator = FisherAggregation()
-    combined_p = aggregator.aggregate(local_results, verbose=verbose)
+    aggregator = FisherAggregation(node_results=local_results)
+    aggregator.aggregate_results(verbose=verbose)
+    combined_p = aggregator.get_aggregated_results()
+    # combined_p = aggregator.aggregate(local_results, verbose=verbose)
 
     return (combined_p, local_results) if return_local else combined_p
 
@@ -91,9 +93,9 @@ if __name__ == '__main__':
 
     for j in range(n_coeff):
         local_results_j = [(beta[j], se[j]) for beta, se in local_results]
-        meta_agg_unit = MetaAnalysisAggregator(results=local_results_j)
+        meta_agg_unit = MetaAnalysisAggregator(node_results=local_results_j)
         meta_agg_unit.aggregate_results()
-        agg_results = meta_agg_unit.get_results()
+        agg_results = meta_agg_unit.get_aggregated_results()
         aggregated_betas.append(agg_results["aggregated_results"])
         aggregated_vars.append(agg_results["aggregated_variance"])
 

@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # Aggregation via meta analysis approach
     aggregator = MetaAnalysisAggregation(results)
     aggregator.aggregate_results()
-    results_agg = aggregator.get_results()
+    results_agg = aggregator.get_aggregated_results()
 
     # single result for effect and ci on each node
     results_nodes = list(map(make_ests, results))
