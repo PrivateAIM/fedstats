@@ -1,6 +1,6 @@
-import pytest
 import numpy as np
-from scipy.stats import norm
+import pytest
+
 from fedstats.aggregation.fed_glm import FedGLM
 
 
@@ -11,7 +11,7 @@ def test_fedglm_initialization():
     assert model.iter == 0
 
 
-def test_set_results():
+def test_set_node_results():
     results = [(np.array([[1, 2], [3, 4]]), np.array([1, 0]))]
     model = FedGLM()
     model.set_node_results(results)
@@ -37,6 +37,8 @@ def test_aggregate_results_singular_matrix():
     model = FedGLM(results)
     model.aggregate_results()
     assert model.coefs.shape == (2,)  # Should still return coefficients
+    coefs = np.linalg.pinv(model.fisher_info_agg) @ model.rhs_agg
+    assert np.allclose(model.coefs, coefs)
 
 
 def test_check_convergence():
@@ -90,18 +92,43 @@ def test_get_summary():
     assert "z" in summary
     assert "p" in summary
 
-def test_get_aggregated_results_before_aggregation():
+
+def test_get_aggregated_results_empty_node_results():
     model = FedGLM([])
     with pytest.raises(ValueError):
         model.get_aggregated_results()
 
-def test_get_aggregated_results_after_aggregation():
+
+def test_get_aggregated_results_before_aggregation():
+    results = [(np.array([[1, 2], [3, 4]]), np.array([1, 0]))]
+    model = FedGLM(results)
+    with pytest.raises(ValueError):
+        model.get_aggregated_results()
+
+
+def test_get_aggregated_results_after_aggregation_with_info():
     results = [(np.array([[2.0, 0.0], [0.0, 2.0]]), np.array([2.0, 4.0]))]
     model = FedGLM(results)
     model.aggregate_results(calc_info=True)
     agg_results = model.get_aggregated_results()
+
+    assert model.info_calculated is True
+
     assert "coef" in agg_results
     assert np.allclose(agg_results["coef"], model.coefs)
     assert "se" in agg_results
     assert "z" in agg_results
     assert "p" in agg_results
+
+
+def test_get_aggregated_results_after_aggregation_without_info():
+    results = [(np.array([[2.0, 0.0], [0.0, 2.0]]), np.array([2.0, 4.0]))]
+    model = FedGLM(results)
+    model.aggregate_results(calc_info=False)
+    agg_results = model.get_aggregated_results()
+
+    assert "coef" in agg_results
+    assert np.allclose(agg_results["coef"], model.coefs)
+    assert "se" not in agg_results
+    assert "z" not in agg_results
+    assert "p" not in agg_results

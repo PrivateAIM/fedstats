@@ -1,11 +1,13 @@
 import numpy as np
 from scipy.stats import norm
 from functools import reduce
-from typing import Dict, Tuple, Union
+from typing import Dict, Union
 from fedstats.aggregation.aggregator import Aggregator
 
 
 class FedGLM(Aggregator):
+    info_calculated: bool = False
+
     def __init__(self, node_results: Union[list, None] = None) -> None:
         """
         Handels aggregation for of GLM fisher scorings
@@ -38,16 +40,14 @@ class FedGLM(Aggregator):
         if calc_info:
             self.calc_info()
 
-    def check_convergence(
-        self, coefs_old: np.ndarray, coefs_new: np.ndarray, tol: float = 1e-6
-    ) -> bool:
+    def check_convergence(self, coefs_old: np.ndarray, coefs_new: np.ndarray, tol: float = 1e-6) -> bool:
         if self.iter == 0:
             return False
         return np.linalg.norm(coefs_new - coefs_old, ord=2).item() < tol
 
     def get_node_results(self) -> list[tuple[np.ndarray, np.ndarray]]:
         return self.node_results
-    
+
     def get_aggregated_results(self) -> Dict[str, np.ndarray]:
         if self.iter == 0:
             raise ValueError("No aggregated results available. Please run aggregate_results first.")
@@ -55,12 +55,12 @@ class FedGLM(Aggregator):
         res = {
             "coef": self.coefs,
         }
-        if hasattr(self, "se_coefs"):
+
+        if self.info_calculated:
             res["se"] = self.se_coefs
-        if hasattr(self, "z_scores"):
             res["z"] = self.z_scores
-        if hasattr(self, "p_values"):
             res["p"] = self.p_values
+
         return res
 
     def get_coefs(self) -> np.ndarray:
