@@ -3,20 +3,26 @@ from scipy.stats import combine_pvalues, norm
 
 import numpy as np
 
+
 class FisherAggregator(Aggregator):
     """
     Aggregates local (estimate, stddev) results by converting them to p-values
     and combining with Fisher's method in the scipy implementation.
     The final result is a single combined p-value.
 
-    :param results: A list of tuples (estimate, stddev) from each site.
+    :param node_results: A list of tuples (estimate, stddev) from each site.
     """
-    def __init__(self, node_results: list[tuple]):
+
+    node_results: list[tuple[float, float]]
+
+    def __init__(self, node_results: list[tuple[float, float]]):
         super().__init__(node_results)
 
-    def aggregate_results(self, verbose=False):
+    def aggregate_results(self, verbose: bool = False) -> None:
         """
         Computes a single combined p-value.
+
+        :param verbose: If True, prints local p-values for each site during aggregation.
         """
         if not self.node_results:
             raise ValueError("No results to aggregate.")
@@ -27,27 +33,30 @@ class FisherAggregator(Aggregator):
             if verbose:
                 print(f"Site {i} local p-value: {p_val}")
             p_values.append(p_val)
-        _, combined_p_value = combine_pvalues(p_values, method='fisher')
-        self.combined_p_value = combined_p_value
-
+        _, combined_p_value = combine_pvalues(p_values, method="fisher")
+        self.combined_p_value: float = combined_p_value  # type: ignore - scipy does not specify the return type correctly
 
     def get_aggregated_results(self) -> float:
         """
         Returns the stored aggregated result.
+
+        :return: The combined p-value from the aggregation.
         """
-        if hasattr(self, 'combined_p_value'):
+        if hasattr(self, "combined_p_value"):
             return self.combined_p_value
         else:
             raise ValueError("No aggregated result computed. Call aggregate_results first.")
 
     @staticmethod
-    def _estimate_to_pvalue(estimate, stddev):
+    def _estimate_to_pvalue(estimate: float | np.ndarray, stddev: float | np.ndarray) -> float | np.ndarray:
         """
         Convert estimate/stddev to a two-sided p-value using z-scores.
         Works for both scalars and numpy arrays.
-        """
-        import numpy as np
 
+        :param estimate: The local estimate(s) from the site(s).
+        :param stddev: The local standard deviation(s) from the site(s).
+        :return: The corresponding p-value(s).
+        """
         # Ensure inputs are numpy arrays
         estimate = np.asarray(estimate)
         stddev = np.asarray(stddev)
@@ -65,5 +74,4 @@ class FisherAggregator(Aggregator):
         p_val = np.where(np.isnan(z_score), 1.0, p_val)
 
         # If the result is a single element, return it as a scalar
-        return p_val.item() if p_val.size==1 else p_val
-
+        return p_val.item() if p_val.size == 1 else p_val
