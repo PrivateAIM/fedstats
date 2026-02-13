@@ -25,6 +25,12 @@ class FedGLM(Aggregator):
         self.node_results = node_results
 
     def aggregate_results(self, calc_info: bool = False) -> None:
+        if self.node_results is None:
+            raise ValueError("No node results to aggregate. Please set node results first.")
+
+        if len(self.node_results) == 0:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         fisher_infos = [res[0] for res in self.node_results]
         rhss = [res[1] for res in self.node_results]
 

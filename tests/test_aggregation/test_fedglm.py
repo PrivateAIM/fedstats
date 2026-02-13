@@ -30,6 +30,22 @@ def test_aggregate_results():
     assert model.iter == 1
 
 
+def test_aggregate_results_no_node_results():
+    model = FedGLM()
+    with pytest.raises(ValueError) as exc_info:
+        model.aggregate_results()
+
+    assert str(exc_info.value) == "No node results to aggregate. Please set node results first."
+
+
+def test_aggregate_results_empty_node_results():
+    model = FedGLM([])
+    with pytest.raises(ValueError) as exc_info:
+        model.aggregate_results()
+
+    assert str(exc_info.value) == "Node results list is empty. Please provide valid node results."
+
+
 def test_aggregate_results_singular_matrix():
     results = [
         (np.array([[1, 1], [1, 1]]), np.array([1, 1]))  # Singular matrix
