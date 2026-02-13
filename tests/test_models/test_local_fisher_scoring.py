@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 from scipy.special import expit
+
 from fedstats.models.local_fisher_scoring import LocalFisherScoring
 
 
@@ -21,6 +22,14 @@ def test_make_covariate_matrix():
     new_X = model.make_covariate_matrix(X, fit_intercept=True)
     assert new_X.shape == (2, 3)
     assert np.all(new_X[:, 0] == 1)  # Check intercept column
+
+
+def test_make_covariate_matrix_no_intercept():
+    X = np.array([[1, 2], [3, 4]])
+    model = LocalFisherScoring(X, np.array([1, 0]), family="binomial", fit_intercept=False)
+    new_X = model.make_covariate_matrix(X, fit_intercept=False)
+    assert new_X.shape == (2, 2)
+    assert np.array_equal(new_X, X)  # No intercept added
 
 
 def test_make_covariate_matrix_standardize():
