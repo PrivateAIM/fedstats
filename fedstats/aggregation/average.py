@@ -19,6 +19,9 @@ class AverageAggregator(Aggregator):
         self.aggregator = aggregator(node_results)
 
     def check_input(self) -> bool:
+        if not self.node_results:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         if all(isinstance(item, tuple) for item in self.node_results):
             return True
         elif all(
@@ -42,6 +45,9 @@ class AverageAggregatorUnit:
 
         :param results: A list containing K tuples of length 2. First element is the effect size, the second the sample size,
         """
+        if not node_results:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         self.node_results = node_results
         self.K = len(node_results)
         self.effect_sizes, self.n_samples = map(lambda x: np.array(x), zip(*node_results))
@@ -96,6 +102,9 @@ class AverageAggregatorCollection:
             ... ]
 
         """
+        if not node_results:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         self.node_results = node_results
         self.K = len(node_results)
 
