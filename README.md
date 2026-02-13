@@ -1,6 +1,7 @@
 # Federated statistics WP1
 
-![CI](https://github.com/PrivateAIM/fedstats/actions/workflows/ci.yml/badge.svg)
+![Lint](https://github.com/PrivateAIM/fedstats/actions/workflows/lint.yml/badge.svg)
+![Test](https://github.com/PrivateAIM/fedstats/actions/workflows/test.yml/badge.svg)
 
 This repo is a collection of code that should be integrated into FLAME in the future.
 
