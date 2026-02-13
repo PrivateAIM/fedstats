@@ -59,9 +59,7 @@ def plot_forest(
     filename="Forestplot",
 ):
     for i, (point_estimates, lower_bounds, upper_bounds) in enumerate(data):
-        if len(point_estimates) != len(lower_bounds) or len(point_estimates) != len(
-            upper_bounds
-        ):
+        if len(point_estimates) != len(lower_bounds) or len(point_estimates) != len(upper_bounds):
             raise ValueError(
                 f"Arrays for point estimates, lower bounds, and upper bounds must have the same length for dataset {i}."
             )
@@ -72,9 +70,7 @@ def plot_forest(
         ylabels = [f"Point {i + 1}" for i in range(n_points)]
 
     if len(ylabels) != n_points:
-        raise ValueError(
-            "y - Labels list must have the same length as the number of points."
-        )
+        raise ValueError("y - Labels list must have the same length as the number of points.")
 
     # Generate colors for each dataset
     if colors is None:
@@ -90,14 +86,10 @@ def plot_forest(
     plt.figure(figsize=(8, 0.5 * n_points))
 
     y_positions = np.arange(n_points)
-    jitter_offsets = np.linspace(
-        0.15, -0.15, len(data)
-    )  # Create small offsets for jittering
+    jitter_offsets = np.linspace(0.15, -0.15, len(data))  # Create small offsets for jittering
 
     for idx, (point_estimates, lower_bounds, upper_bounds) in enumerate(data):
-        jittered_positions = (
-            y_positions + jitter_offsets[idx]
-        )  # Apply jitter to y-positions
+        jittered_positions = y_positions + jitter_offsets[idx]  # Apply jitter to y-positions
         plt.errorbar(
             point_estimates,
             jittered_positions,

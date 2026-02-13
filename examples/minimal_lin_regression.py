@@ -61,9 +61,7 @@ def main(num_clients, num_obs_each, seed):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Number of clients and observations.")
     parser.add_argument("--clients", type=int, default=5, help="Number of clients.")
-    parser.add_argument(
-        "--obs", type=int, default=100, help="Number of observations at each client."
-    )
+    parser.add_argument("--obs", type=int, default=100, help="Number of observations at each client.")
     parser.add_argument("--seed", type=int, default=42, help="Seed to generate data.")
     args = parser.parse_args()
     main(args.clients, args.obs, args.seed)

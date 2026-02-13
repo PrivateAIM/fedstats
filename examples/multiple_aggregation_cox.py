@@ -14,9 +14,7 @@ from fedstats.util import plot_forest
 def load_split_data(num_clients=2, random_state=42):
     data = load_rossi()
 
-    shuffled_data = data.sample(frac=1, random_state=random_state).reset_index(
-        drop=True
-    )
+    shuffled_data = data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
     chunk_size = len(shuffled_data) // num_clients
     remainder = len(shuffled_data) % num_clients
@@ -46,9 +44,7 @@ def make_ests(x):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Save the Plot?")
-    parser.add_argument(
-        "--saveplot", type=bool, default=False, help="If true, plot will be saved."
-    )
+    parser.add_argument("--saveplot", type=bool, default=False, help="If true, plot will be saved.")
 
     datasets = load_split_data()
     results = list(map(apply_cox, datasets))

@@ -6,9 +6,7 @@ from fedstats.models.local_linear_regression import LocalLinearRegression
 def test_make_covariate_matrix():
     X = np.array([[1, 2], [3, 4]])
     model = LocalLinearRegression(X, np.array([1, 2]))
-    assert np.array_equal(
-        model.make_covariate_matrix(X, True), np.array([[1, 1, 2], [1, 3, 4]])
-    )
+    assert np.array_equal(model.make_covariate_matrix(X, True), np.array([[1, 1, 2], [1, 3, 4]]))
     assert np.array_equal(model.make_covariate_matrix(X, False), X)
 
     with pytest.raises(NotImplementedError):

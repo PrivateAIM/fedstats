@@ -11,10 +11,7 @@ def fit_model_logistic_federated(X, y, max_iter=100):
     glm = FederatedGLM()
 
     # init local models using default of 5 clients
-    local_states = [
-        PartialFisherScoring(X[k], y[k], "binomial", fit_intercept=False)
-        for k in range(5)
-    ]
+    local_states = [PartialFisherScoring(X[k], y[k], "binomial", fit_intercept=False) for k in range(5)]
     for i in range(max_iter):
         # update local models, retrieve them and aggregate them
         res = list(map(lambda state: state.calc_fisher_scoring_parts(), local_states))
@@ -36,9 +33,7 @@ def fit_full_comparison_model(X, y):
     X_full = np.concatenate(X)
     y_full = np.concatenate(y)
     mod_fit = sm.GLM(y_full, X_full, family=sm.families.Binomial()).fit()
-    return dict(
-        coef=mod_fit.params, se=mod_fit.bse, z=mod_fit.tvalues, p=mod_fit.pvalues
-    )
+    return dict(coef=mod_fit.params, se=mod_fit.bse, z=mod_fit.tvalues, p=mod_fit.pvalues)
 
 
 def main():

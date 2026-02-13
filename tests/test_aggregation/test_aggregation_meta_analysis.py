@@ -1,25 +1,30 @@
 import pytest
 import numpy as np
-from fedstats.aggregation.meta_analysis import MetaAnalysisAggregator, MetaAnalysisAggregatorUnit, MetaAnalysisAggregatorCollection
+from fedstats.aggregation.meta_analysis import (
+    MetaAnalysisAggregator,
+    MetaAnalysisAggregatorUnit,
+    MetaAnalysisAggregatorCollection,
+)
+
 
 def test_aggregator_unit():
     """
     Test MetaAnalysisAggregatorUnit for a single meta-analysis.
     """
-    results = [(1., 0.1),  # Server 1 
-               (2., 0.1),  # Server 2 
-               (3., 0.1),  # Server 3 
-               (4., 0.1)   # Server 4 
-               ] 
+    results = [
+        (1.0, 0.1),  # Server 1
+        (2.0, 0.1),  # Server 2
+        (3.0, 0.1),  # Server 3
+        (4.0, 0.1),  # Server 4
+    ]
     meta_analysis = MetaAnalysisAggregatorUnit(results)
     meta_analysis.aggregate_results(calculate_heterogeneity=True)
     agg_res = meta_analysis.get_aggregated_results()
-    
+
     var_agg = 1 / (1 / 0.1 * 4)  # Variance of pooled effect size
     assert np.allclose(2.5, agg_res["aggregated_results"])  # Check pooled effect size
     assert np.allclose(var_agg, agg_res["aggregated_variance"])  # Check pooled variance
     assert agg_res["confidence_interval"][0] < 2.5 < agg_res["confidence_interval"][1]  # CI includes pooled effect size
-
 
 
 def test_aggregator_collection():
@@ -27,10 +32,10 @@ def test_aggregator_collection():
     Test MetaAnalysisAggregatorCollection for multiple meta-analyses.
     """
     results = [
-        [(1., 0.1), (1., 0.1)],  # Server 1
-        [(2., 0.1), (2., 0.1)],  # Server 2
-        [(3., 0.1), (3., 0.1)],  # Server 3
-        [(4., 0.1), (4., 0.1)],  # Server 4
+        [(1.0, 0.1), (1.0, 0.1)],  # Server 1
+        [(2.0, 0.1), (2.0, 0.1)],  # Server 2
+        [(3.0, 0.1), (3.0, 0.1)],  # Server 3
+        [(4.0, 0.1), (4.0, 0.1)],  # Server 4
     ]
 
     collection = MetaAnalysisAggregatorCollection(results)
@@ -47,18 +52,17 @@ def test_aggregator_collection():
         assert ci[0] < expected_effects[i] < ci[1]
 
 
-
 def test_meta_analysis_aggregator():
     """
     Test MetaAnalysisAggregator for wrapper behavior over Unit and Collection.
     """
     # Test as Unit
-    unit_results = [(1., 0.1), (2., 0.1), (3., 0.1), (4., 0.1)]
+    unit_results = [(1.0, 0.1), (2.0, 0.1), (3.0, 0.1), (4.0, 0.1)]
     aggregator_unit = MetaAnalysisAggregator(unit_results)
     assert aggregator_unit.isunit is True  # Verify it's treated as a unit
     aggregator_unit.aggregate_results(calculate_heterogeneity=True)
     agg_res_unit = aggregator_unit.get_aggregated_results()
-    
+
     var_agg_unit = 1 / (1 / 0.1 * 4)
     assert np.allclose(2.5, agg_res_unit["aggregated_results"])
     assert np.allclose(var_agg_unit, agg_res_unit["aggregated_variance"])
@@ -66,10 +70,10 @@ def test_meta_analysis_aggregator():
 
     # Test as Collection
     collection_results = [
-        [(1., 0.1), (1., 0.1)],  # Server 1
-        [(2., 0.1), (2., 0.1)],  # Server 2
-        [(3., 0.1), (3., 0.1)],  # Server 3
-        [(4., 0.1), (4., 0.1)],  # Server 4
+        [(1.0, 0.1), (1.0, 0.1)],  # Server 1
+        [(2.0, 0.1), (2.0, 0.1)],  # Server 2
+        [(3.0, 0.1), (3.0, 0.1)],  # Server 3
+        [(4.0, 0.1), (4.0, 0.1)],  # Server 4
     ]
     aggregator_collection = MetaAnalysisAggregator(collection_results)
     assert aggregator_collection.isunit is False  # Verify it's treated as a collection
@@ -84,8 +88,7 @@ def test_meta_analysis_aggregator():
     for i, ci in enumerate(agg_res_collection["confidence_interval"]):
         assert ci[0] < expected_effects[i] < ci[1]
 
-
     # test wrong input format
-    unit_results = [1,2,3]
+    unit_results = [1, 2, 3]
     with pytest.raises(TypeError):
         MetaAnalysisAggregator(unit_results)

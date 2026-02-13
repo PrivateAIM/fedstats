@@ -81,7 +81,5 @@ def main(save_plot=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Save the Plot?")
-    parser.add_argument(
-        "--saveplot", type=bool, default=False, help="If true, plot will be saved."
-    )
+    parser.add_argument("--saveplot", type=bool, default=False, help="If true, plot will be saved.")
     main(save_plot=parser.parse_args().saveplot)
