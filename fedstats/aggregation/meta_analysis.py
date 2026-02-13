@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.stats import norm
+
 from fedstats.aggregation.aggregator import Aggregator
+
 
 class MetaAnalysisAggregator(Aggregator):
     node_results: list[tuple[float, float]] | list[list[tuple[float, float]]]
@@ -21,8 +23,10 @@ class MetaAnalysisAggregator(Aggregator):
 
     def check_input(self) -> bool:
         if all(isinstance(item, tuple) for item in self.node_results):
-            return True 
-        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.node_results):
+            return True
+        elif all(
+            isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.node_results
+        ):
             return False
         else:
             raise TypeError("Input should be either a list of tuples, or a list of list of tuples.")
@@ -33,14 +37,13 @@ class MetaAnalysisAggregator(Aggregator):
     def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
         return self.aggregator.get_aggregated_results()
 
-    
 
 class MetaAnalysisAggregatorUnit:
     def __init__(self, node_results: list[tuple[float, float]]) -> None:
         """
         MetaAnalysisAggregator can be used to aggregate K single effect sizes.
 
-        Used method is a fixed effect meta analysis or also called inverse variance weights. 
+        Used method is a fixed effect meta analysis or also called inverse variance weights.
         See for example Table 1 right column in https://doi.org/10.1093/bioinformatics/btq340
 
         :param node_results: A list containing K tuples of length 2. First element is the effect size, the second the variance,
@@ -50,20 +53,17 @@ class MetaAnalysisAggregatorUnit:
         self.effect_sizes, self.variances = map(lambda x: np.array(x), zip(*node_results))
         self.weights = 1 / self.variances
 
-
     def calculate_pooled_effect_size(self) -> None:
         """
         Calculate the pooled effect size (weighted mean).
         """
         self.pooled_effect_size = (np.sum(self.weights * self.effect_sizes) / np.sum(self.weights)).item()
 
-
     def calculate_pooled_variance(self) -> None:
         """
         Calculate the variance of the pooled effect size.
         """
         self.pooled_variance = 1 / np.sum(self.weights).item()
-
 
     def calculate_confidence_interval(self, alpha_level: float = 0.05) -> None:
         """
@@ -73,10 +73,9 @@ class MetaAnalysisAggregatorUnit:
 
         """
         std_error = np.sqrt(self.pooled_variance)
-        quantile = norm.ppf(1-alpha_level/2, loc=0, scale=1)
+        quantile = norm.ppf(1 - alpha_level / 2, loc=0, scale=1)
         self.ci_lower = (self.pooled_effect_size - quantile * std_error).item()
         self.ci_upper = (self.pooled_effect_size + quantile * std_error).item()
-
 
     def calculate_q_statistic(self) -> None:
         """
@@ -84,22 +83,20 @@ class MetaAnalysisAggregatorUnit:
         """
         self.q_stat = np.sum(self.weights * (self.effect_sizes - self.pooled_effect_size) ** 2).item()
 
-
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         """
         Perform the meta-analysis and return all results.
 
-        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated. 
+        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
         """
-        
+
         self.calculate_pooled_effect_size()
         self.calculate_pooled_variance()
 
         self.calculate_confidence_interval()
-    
+
         if calculate_heterogeneity:
             self.calculate_q_statistic()
-
 
     def get_aggregated_results(self) -> dict[str, tuple[float, float] | float]:
         """
@@ -113,12 +110,8 @@ class MetaAnalysisAggregatorUnit:
         results["aggregated_variance"] = self.pooled_variance
         results["confidence_interval"] = (self.ci_lower, self.ci_upper)
         if getattr(self, "q_stat", None) is not None:
-            results['q_statistic'] = self.q_stat
+            results["q_statistic"] = self.q_stat
         return results
-
-
-
-
 
 
 class MetaAnalysisAggregatorCollection:
@@ -142,8 +135,9 @@ class MetaAnalysisAggregatorCollection:
         self.node_results = node_results
         self.K = len(node_results)
 
-        self.aggregator_units= [(MetaAnalysisAggregatorUnit([est[p] for est in node_results])) for p in range(len(node_results[0]))]
-
+        self.aggregator_units = [
+            (MetaAnalysisAggregatorUnit([est[p] for est in node_results])) for p in range(len(node_results[0]))
+        ]
 
     def calculate_pooled_effect_size(self) -> None:
         """
@@ -152,14 +146,12 @@ class MetaAnalysisAggregatorCollection:
         for unit in self.aggregator_units:
             unit.calculate_pooled_effect_size()
 
-
     def calculate_pooled_variance(self) -> None:
         """
         Calculate the variance of the pooled effect size.
         """
         for unit in self.aggregator_units:
             unit.calculate_pooled_variance()
-
 
     def calculate_confidence_interval(self, alpha_level: float = 0.05) -> None:
         """
@@ -170,7 +162,6 @@ class MetaAnalysisAggregatorCollection:
         for unit in self.aggregator_units:
             unit.calculate_confidence_interval(alpha_level=alpha_level)
 
-
     def calculate_q_statistic(self) -> None:
         """
         Calculate the Q-statistic for heterogeneity.
@@ -179,33 +170,27 @@ class MetaAnalysisAggregatorCollection:
         for unit in self.aggregator_units:
             unit.calculate_q_statistic()
 
-
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         """
         Perform the meta-analysis and return all results.
 
-        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated. 
+        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
         """
         self.calculate_pooled_effect_size()
         self.calculate_pooled_variance()
         self.calculate_confidence_interval()
-    
+
         if calculate_heterogeneity:
             self.calculate_q_statistic()
-
 
     def get_aggregated_results(self) -> dict[str, np.ndarray]:
         """
         Get results fom the object
         """
         results = {}
-        results['aggregated_results'] = np.array([unit.pooled_effect_size for unit in self.aggregator_units])
-        results['aggregated_variance'] = np.array([unit.pooled_variance for unit in self.aggregator_units])
-        results['confidence_interval'] = np.array([(unit.ci_lower, unit.ci_upper) for unit in self.aggregator_units])
+        results["aggregated_results"] = np.array([unit.pooled_effect_size for unit in self.aggregator_units])
+        results["aggregated_variance"] = np.array([unit.pooled_variance for unit in self.aggregator_units])
+        results["confidence_interval"] = np.array([(unit.ci_lower, unit.ci_upper) for unit in self.aggregator_units])
         if getattr(self, "q_stat_calculated", None) is not None:
-            results['q_statistic'] = np.array([unit.q_stat for unit in self.aggregator_units])
+            results["q_statistic"] = np.array([unit.q_stat for unit in self.aggregator_units])
         return results
-
-
-
-

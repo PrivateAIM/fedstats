@@ -15,17 +15,13 @@ class LocalLinearRegression:
         standardize: bool = False,
         **kwargs,
     ) -> None:
-        self.X = self.make_covariate_matrix(
-            X=X, fit_intercept=fit_intercept, standardize=standardize
-        )
+        self.X = self.make_covariate_matrix(X=X, fit_intercept=fit_intercept, standardize=standardize)
         self.y = y
         self.n, self.p = X.shape
         self.model = sm.OLS(self.y, self.X, **kwargs)
         self.model_fitted = False
 
-    def make_covariate_matrix(
-        self, X, fit_intercept: bool, standardize: bool = False
-    ) -> np.ndarray:
+    def make_covariate_matrix(self, X, fit_intercept: bool, standardize: bool = False) -> np.ndarray:
         """
         Function to build a covariate matrix.
 

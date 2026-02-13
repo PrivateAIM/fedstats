@@ -15,9 +15,7 @@ class LocalFisherScoring:
         fit_intercept: bool = True,
         standardize: bool = False,
     ) -> None:
-        self.X = self.make_covariate_matrix(
-            X=X, fit_intercept=fit_intercept, standardize=standardize
-        )
+        self.X = self.make_covariate_matrix(X=X, fit_intercept=fit_intercept, standardize=standardize)
         self.y = y
         self.n, self.p = self.X.shape
         self.beta = np.zeros(self.p)
@@ -27,9 +25,7 @@ class LocalFisherScoring:
 
         self.mu_fn, self.dmu_deta_fn, self.V_fn = self.get_glm_functions(family)
 
-    def make_covariate_matrix(
-        self, X, fit_intercept: bool, standardize: bool = False
-    ) -> np.ndarray:
+    def make_covariate_matrix(self, X, fit_intercept: bool, standardize: bool = False) -> np.ndarray:
         """
         Function to build a covariate matrix.
 
@@ -44,9 +40,7 @@ class LocalFisherScoring:
     def set_coefs(self, coefs: np.ndarray) -> None:
         self.beta = coefs
 
-    def calc_fisher_scoring_parts(
-        self, verbose: bool = False
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def calc_fisher_scoring_parts(self, verbose: bool = False) -> tuple[np.ndarray, np.ndarray]:
         """
         Returns a new array with beta coefs
         """
@@ -135,6 +129,4 @@ class LocalFisherScoring:
         elif family == "poisson":
             return poisson_mu, poisson_dmu_deta, poisson_V
         else:
-            raise ValueError(
-                "Unsupported family. Choose from 'gaussian', 'binomial', 'poisson'."
-            )
+            raise ValueError("Unsupported family. Choose from 'gaussian', 'binomial', 'poisson'.")

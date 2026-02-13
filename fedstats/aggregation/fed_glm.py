@@ -1,7 +1,9 @@
-import numpy as np
-from scipy.stats import norm
 from functools import reduce
 from typing import Dict, Union
+
+import numpy as np
+from scipy.stats import norm
+
 from fedstats.aggregation.aggregator import Aggregator
 
 

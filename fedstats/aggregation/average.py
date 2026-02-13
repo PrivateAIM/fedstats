@@ -1,5 +1,7 @@
 import numpy as np
+
 from fedstats.aggregation.aggregator import Aggregator
+
 
 class AverageAggregator(Aggregator):
     def __init__(self, node_results: list) -> None:
@@ -18,21 +20,19 @@ class AverageAggregator(Aggregator):
 
     def check_input(self) -> bool:
         if all(isinstance(item, tuple) for item in self.node_results):
-            return True 
-        elif all(isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.node_results):
+            return True
+        elif all(
+            isinstance(item, list) and all(isinstance(subitem, tuple) for subitem in item) for item in self.node_results
+        ):
             return False
         else:
             raise TypeError("Input should be either a list of tuples, or a list of list of tuples.")
 
-
     def aggregate_results(self) -> None:
         self.aggregator.aggregate_results()
 
-
     def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
         return self.aggregator.get_results()
-
-
 
 
 class AverageAggregatorUnit:
@@ -47,25 +47,22 @@ class AverageAggregatorUnit:
         self.effect_sizes, self.n_samples = map(lambda x: np.array(x), zip(*node_results))
         self.weights = self.n_samples / self.n_samples.sum()
 
-
     def calculate_pooled_effect_size(self) -> None:
         """
         Calculate the pooled effect size (weighted mean).
         """
         self.pooled_effect_size = (self.effect_sizes * self.weights).sum().item()
 
-
     def aggregate_results(self) -> None:
         """
         Perform the meta-analysis and return all results.
 
-        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated. 
+        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
         """
         self.calculate_pooled_effect_size()
         # TODO: self.calculate_confidence_interval()   --> search literature for method or just use CLT properties if nothing is there
         # Good idea: make basically a fedAvg formula for the variance, i.e. something like instead of 1/(n-1) \sum (x_i-mu_x) with appripriate weights n_s/n
         # Also look here (attention! qestion is for a SEQUENCE a): https://math.stackexchange.com/questions/3135950/central-limit-theorem-for-weighted-average
-
 
     def get_results(self) -> dict[str, tuple[float, float] | float]:
         """
@@ -78,9 +75,6 @@ class AverageAggregatorUnit:
         results["aggregated_results"] = self.pooled_effect_size
         # TODO: results["confidence_interval"] = (self.ci_lower, self.ci_upper)
         return results
-
-
-
 
 
 class AverageAggregatorCollection:
@@ -105,8 +99,9 @@ class AverageAggregatorCollection:
         self.node_results = node_results
         self.K = len(node_results)
 
-        self.aggregator_units= [(AverageAggregatorUnit([est[p] for est in node_results])) for p in range(len(node_results[0]))]
-
+        self.aggregator_units = [
+            (AverageAggregatorUnit([est[p] for est in node_results])) for p in range(len(node_results[0]))
+        ]
 
     def calculate_pooled_effect_size(self) -> None:
         """
@@ -115,22 +110,16 @@ class AverageAggregatorCollection:
         for unit in self.aggregator_units:
             unit.calculate_pooled_effect_size()
 
-
     def aggregate_results(self) -> None:
         """
         Perform the meta-analysis and return all results.
 
-        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated. 
+        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
         """
         self.calculate_pooled_effect_size()
-
 
     def get_results(self) -> dict[str, np.ndarray]:
         """
         Get results fom the object
         """
-        return dict(aggregated_results = np.array([unit.pooled_effect_size for unit in self.aggregator_units]))
-
-
-
-
+        return dict(aggregated_results=np.array([unit.pooled_effect_size for unit in self.aggregator_units]))
