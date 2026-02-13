@@ -59,7 +59,7 @@ def main(save_plot=False):
         (coefs, cil, ciu),
     ]
 
-    print("=== Results aggregatred ===")
+    print("=== Results aggregated ===")
     print(results_agg)
 
     print("=== Results on full dataset ===")
