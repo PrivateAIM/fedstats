@@ -1,0 +1,37 @@
+name: Lint
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.13"
+  DEFAULT_POETRY_VERSION: "2.1.0"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Poetry
+        uses: ./.github/actions/setup-poetry
+      - name: Install dependencies
+        run: poetry install --with dev
+      - name: Lint
+        run: poetry run ruff check .
+
+  check-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Poetry
+        uses: ./.github/actions/setup-poetry
+      - name: Install dependencies
+        run: poetry install --with dev
+      - name: Lint
+        run: poetry run ruff format --check .
