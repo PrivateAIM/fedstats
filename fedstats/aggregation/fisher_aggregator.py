@@ -1,7 +1,7 @@
-from .aggregator import Aggregator
+import numpy as np
 from scipy.stats import combine_pvalues, norm
 
-import numpy as np
+from .aggregator import Aggregator
 
 
 class FisherAggregator(Aggregator):
@@ -9,6 +9,7 @@ class FisherAggregator(Aggregator):
     Aggregates local (estimate, stddev) results by converting them to p-values
     and combining with Fisher's method in the scipy implementation.
     The final result is a single combined p-value.
+    This requires that the underlying distributions of the estimates are approximately normal.
 
     :param node_results: A list of tuples (estimate, stddev) from each site.
     """
@@ -53,6 +54,8 @@ class FisherAggregator(Aggregator):
         Convert estimate/stddev to a two-sided p-value using z-scores.
         Works for both scalars and numpy arrays.
 
+        Returns nan for any cases where stddev is zero, as the test is not valid in those cases.
+
         :param estimate: The local estimate(s) from the site(s).
         :param stddev: The local standard deviation(s) from the site(s).
         :return: The corresponding p-value(s).
@@ -70,8 +73,16 @@ class FisherAggregator(Aggregator):
         # Compute two-sided p-values
         p_val = 2.0 * (1.0 - norm.cdf(np.abs(z_score)))
 
-        # Wherever stddev was zero, override p-value to 1.0
-        p_val = np.where(np.isnan(z_score), 1.0, p_val)
+        # Wherever stddev was zero, return nan as the test is not valid
+        p_val = np.where(np.isnan(z_score), np.nan, p_val)
+
+        # Log a warning if any stddev were zero
+        if np.any(stddev == 0):
+            import warnings
+
+            warnings.warn(
+                "Standard deviation of zero encountered in _estimate_to_pvalue; returning NaN for those p-values."
+            )
 
         # If the result is a single element, return it as a scalar
         return p_val.item() if p_val.size == 1 else p_val
