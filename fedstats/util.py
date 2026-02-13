@@ -57,7 +57,7 @@ def plot_forest(
     alpha=None,
     save_plot=False,
     filename="Forestplot",
-):
+):  # pragma: no cover
     for i, (point_estimates, lower_bounds, upper_bounds) in enumerate(data):
         if len(point_estimates) != len(lower_bounds) or len(point_estimates) != len(upper_bounds):
             raise ValueError(
@@ -74,7 +74,7 @@ def plot_forest(
 
     # Generate colors for each dataset
     if colors is None:
-        colors = plt.cm.cividis(np.linspace(0, 1, len(data)))
+        colors = plt.cm.cividis(np.linspace(0, 1, len(data)))  # type: ignore
 
     if alpha is None:
         alpha = [1 for _ in range(len(data))]
