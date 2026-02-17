@@ -1,14 +1,13 @@
 import numpy as np
-from flame.star import StarModel, StarAnalyzer, StarAggregator
+from flame.star import StarAggregator, StarAnalyzer, StarModel
+
 from fedstats import FederatedGLM, PartialFisherScoring
 from fedstats.util import simulate_logistic_regression
 
 
 class LocalFisherScoring(StarAnalyzer):
     def __init__(self, flame):
-        """
-        Initializes local analyzer node
-        """
+        """Initializes local analyzer node."""
         super().__init__(flame)  # Connects this analyzer to the FLAME components
         self.iteration = 0
         local_PRNGKey = np.random.randint(1, 99999)
@@ -27,7 +26,7 @@ class LocalFisherScoring(StarAnalyzer):
         Runs local parts of the federated fisher scoring
         Fits score vectore and fisher information matrix on current values from aggregator results
         aggregator_results should be a list with one element. This element is a tuple 2 elements:
-        1. Aggregation results (np.ndarray) 2. convergence flag
+        1. Aggregation results (np.ndarray) 2. convergence flag.
         """
         # first iteration, aggregator gives no results and therefore None, use local inital values
         if self.iteration == 0:
@@ -52,7 +51,7 @@ class FederatedLogisticRegression(StarAggregator):
     def __init__(self, flame):
         """
         Initializes aggregator object and iteratively checks for convergence
-        and aggegates fisher scoring parts from each node
+        and aggegates fisher scoring parts from each node.
         """
         super().__init__(flame)  # Connects this aggregator to the FLAME components
         self.glm = FederatedGLM()

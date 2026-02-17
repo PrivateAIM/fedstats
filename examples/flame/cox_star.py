@@ -1,8 +1,9 @@
-from flame.star import StarModel, StarAnalyzer, StarAggregator
+import pandas as pd
+from flame.star import StarAggregator, StarAnalyzer, StarModel
 from lifelines import CoxPHFitter
 from lifelines.datasets import load_rossi
+
 from fedstats import MetaAnalysisAggregation
-import pandas as pd
 
 
 class LocalCoxModel(StarAnalyzer):
@@ -26,7 +27,6 @@ class LocalCoxModel(StarAnalyzer):
                                    - Contains the result from the aggregator's aggregation_method in subsequent iterations.
         :return: Any result of your analysis on one node (ex. patient count).
         """
-
         data = load_rossi()
         # use a fraction 50% randomly selected data
         data = data.sample(frac=0.5).reset_index(drop=True)
@@ -34,7 +34,7 @@ class LocalCoxModel(StarAnalyzer):
         cph = CoxPHFitter()
         cph.fit(data, duration_col="week", event_col="arrest")
         est, sds = cph.params_.to_list(), (cph.standard_errors_**2).to_list()
-        return list(zip(est, sds))
+        return list(zip(est, sds, strict=False))
 
 
 class ResultsAggregator(StarAggregator):

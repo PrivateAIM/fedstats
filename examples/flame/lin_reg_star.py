@@ -1,6 +1,7 @@
-from flame.star import StarModel, StarAnalyzer, StarAggregator
-from fedstats import MetaAnalysisAggregation, LinearRegression
 import numpy as np
+from flame.star import StarAggregator, StarAnalyzer, StarModel
+
+from fedstats import LinearRegression, MetaAnalysisAggregation
 
 
 class LocalLinearModel(StarAnalyzer):
@@ -24,7 +25,6 @@ class LocalLinearModel(StarAnalyzer):
                                    - Contains the result from the aggregator's aggregation_method in subsequent iterations.
         :return: Any result of your analysis on one node (ex. patient count).
         """
-
         ## load data
         # required to take first element as we have one data store and the list has therefore 1 entry
         data = data[0]
