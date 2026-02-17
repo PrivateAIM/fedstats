@@ -1,7 +1,8 @@
+from datetime import datetime
+
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.special import expit  # Sigmoid function for logistic regression
-import matplotlib.pyplot as plt
-from datetime import datetime
 
 
 def split_data(

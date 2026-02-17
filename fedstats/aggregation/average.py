@@ -8,7 +8,8 @@ class AverageAggregator(Aggregator):
         """
         Wrapper class to handle aggregation via Average
 
-        The object is either a AverageAggregatorUnit or a AverageAggregatorCollection. For typing details, see the two classes.
+        The object is either a AverageAggregatorUnit or a AverageAggregatorCollection.
+        For typing details, see the two classes.
 
         :param results: A list of tuples or a list of lists of tuples. See subclasses for more.
         """
@@ -34,7 +35,7 @@ class AverageAggregator(Aggregator):
     def aggregate_results(self) -> None:
         self.aggregator.aggregate_results()
 
-    def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
+    def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float] | dict[str, tuple[float, float]]:
         return self.aggregator.get_results()
 
 
@@ -43,14 +44,15 @@ class AverageAggregatorUnit:
         """
         AverageAggregator can be used to aggregate K single effect sizes. Either weighted by sample size.
 
-        :param results: A list containing K tuples of length 2. First element is the effect size, the second the sample size,
+        :param results: A list containing K tuples of length 2.
+            First element is the effect size, the second the sample size.
         """
         if not node_results:
             raise ValueError("Node results list is empty. Please provide valid node results.")
 
         self.node_results = node_results
         self.K = len(node_results)
-        self.effect_sizes, self.n_samples = map(lambda x: np.array(x), zip(*node_results))
+        self.effect_sizes, self.n_samples = map(lambda x: np.array(x), zip(*node_results, strict=False))
         self.weights = self.n_samples / self.n_samples.sum()
 
     def calculate_pooled_effect_size(self) -> None:
@@ -66,11 +68,13 @@ class AverageAggregatorUnit:
         :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
         """
         self.calculate_pooled_effect_size()
-        # TODO: self.calculate_confidence_interval()   --> search literature for method or just use CLT properties if nothing is there
-        # Good idea: make basically a fedAvg formula for the variance, i.e. something like instead of 1/(n-1) \sum (x_i-mu_x) with appripriate weights n_s/n
+        # TODO: self.calculate_confidence_interval()
+        # --> search literature for method or just use CLT properties if nothing is there
+        # Good idea: make basically a fedAvg formula for the variance,
+        #   i.e. something like instead of 1/(n-1) \sum (x_i-mu_x) with appripriate weights n_s/n
         # Also look here (attention! qestion is for a SEQUENCE a): https://math.stackexchange.com/questions/3135950/central-limit-theorem-for-weighted-average
 
-    def get_results(self) -> dict[str, tuple[float, float] | float]:
+    def get_results(self) -> dict[str, float] | dict[str, tuple[float, float]]:
         """
         Get results fom the object
 
@@ -89,12 +93,15 @@ class AverageAggregatorCollection:
         AverageAggregatorCollection is a wrapper of AverageAggregatorUnit for multiple effect sizes.
 
         This class receives and processes estimators from $K$ servers, where each server produces a list of results.
-        Each element in these lists is itself a list containing $P$ tuples, corresponding to $P$ effect sizes (effect size, number of local samples).
+        Each element in these lists is itself a list containing $P$ tuples,
+        corresponding to $P$ effect sizes (effect size, number of local samples).
         In a standard scenario, all n would be the same. However, it is designed in this way to provide flexibility.
 
-        :param results: A list of length K containting p lists with tuples of length 2. First element is the effect size, the second the variance,
+        :param results: A list of length K containting p lists with tuples of length 2.
+            First element is the effect size, the second the number of local samples.
 
-        Example how the results from K=3 servers with P=2 effect sizes may look like. E.g. mu32 corresponds to the effect size of the 2nd estimator of sever 3.
+        Example how the results from K=3 servers with P=2 effect sizes may look like.
+        Here, mu32 corresponds to the effect size of the 2nd estimator of sever 3.
             >>> data = [
             ...     [(mu11, n11), (mu12, n12)],  # Results from server 1
             ...     [(mu21, n21), (mu22, n22)],  # Results from server 2

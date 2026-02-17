@@ -3,9 +3,11 @@ Simple example on how to aggregate one single statistical estimator using a simp
 """
 
 import argparse
+
 import numpy as np
 import scipy.stats as stats
-from fedstats import MetaAnalysisAggregation, AverageAggregation
+
+from fedstats import AverageAggregation, MetaAnalysisAggregation
 
 
 def make_local_data(n, seed):
@@ -46,9 +48,8 @@ def main(num_clients, num_obs_each, seed):
     print("Results using meta analysis")
     print(f"Aggregated Results calculated on {num_clients} clients:")
     print(f"Aggregated effect: {results_ma['aggregated_results']:.4f}")
-    print(
-        f"95% Confidence Interval: ({results_ma['confidence_interval'][0]:.4f}, {results_ma['confidence_interval'][1]:.4f})"
-    )  # type: ignore
+    ci = results_ma["confidence_interval"]
+    print(f"95% Confidence Interval: ({ci[0]:.4f}, {ci[1]:.4f})")  # type: ignore
     # print(f"Q-Statistic (Heterogeneity): {results['q_statistic']:.4f}")
 
     print("\n")

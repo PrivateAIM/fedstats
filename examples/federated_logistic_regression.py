@@ -1,6 +1,8 @@
 import pprint
+
 import numpy as np
 import statsmodels.api as sm
+
 from fedstats import FederatedGLM, PartialFisherScoring
 from fedstats.util import simulate_logistic_regression
 
@@ -12,7 +14,7 @@ def fit_model_logistic_federated(X, y, max_iter=100):
 
     # init local models using default of 5 clients
     local_states = [PartialFisherScoring(X[k], y[k], "binomial", fit_intercept=False) for k in range(5)]
-    for i in range(max_iter):
+    for _i in range(max_iter):
         # update local models, retrieve them and aggregate them
         res = list(map(lambda state: state.calc_fisher_scoring_parts(), local_states))
         b_old = glm.get_coefs()

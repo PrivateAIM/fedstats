@@ -1,8 +1,10 @@
 import argparse
+
 import numpy as np
 import statsmodels.api as sm
 from sklearn.datasets import fetch_california_housing
-from fedstats import MetaAnalysisAggregation, LinearRegression
+
+from fedstats import LinearRegression, MetaAnalysisAggregation
 from fedstats.util import plot_forest
 
 
@@ -29,7 +31,7 @@ def fit_local_model(X, y):
 
 def main(save_plot=False):
     Xs, ys = load_split_data()
-    local_datasets = list(zip(Xs, ys))
+    local_datasets = list(zip(Xs, ys, strict=False))
 
     # fit models and get results
     results_nodes = list(map(lambda tup: fit_local_model(*tup), local_datasets))
@@ -67,7 +69,7 @@ def main(save_plot=False):
     print(coefs)
 
     print("CI:")
-    print(list(zip(cil, ciu)))
+    print(list(zip(cil, ciu, strict=False)))
 
     # get rid of intercept to make a nice plot
     data_trim = list(map(lambda x: list(map(lambda y: y[1:], x)), data))

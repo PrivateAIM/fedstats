@@ -3,10 +3,12 @@ Example to run Cox proportional Hazard model and aggregate estimators using Meta
 """
 
 import argparse
+
+import matplotlib.pyplot as plt
 import numpy as np
 from lifelines import CoxPHFitter
 from lifelines.datasets import load_rossi
-import matplotlib.pyplot as plt
+
 from fedstats import MetaAnalysisAggregation
 from fedstats.util import plot_forest
 
@@ -33,7 +35,7 @@ def apply_cox(data_chunk):
     cph = CoxPHFitter()
     cph.fit(data_chunk, duration_col="week", event_col="arrest")
     est, sds = cph.params_.to_list(), (cph.standard_errors_**2).to_list()
-    return list(zip(est, sds))
+    return list(zip(est, sds, strict=False))
 
 
 def make_ests(x):

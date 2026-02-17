@@ -25,7 +25,7 @@ def test_split_data_num_clients_and_labels():
         total_samples = sum(len(x) for x in X_split)
         assert total_samples == len(X)
 
-        for x_part, y_part in zip(X_split, y_split):
+        for x_part, y_part in zip(X_split, y_split, strict=False):
             assert len(x_part) == len(y_part)
 
             for i in range(len(x_part)):
@@ -43,7 +43,7 @@ def test_simulate_logistic_regression_output_shapes():
     total_samples = sum(len(x) for x in X_splits)
     assert total_samples == 150
 
-    for x_part, y_part in zip(X_splits, y_splits):
+    for x_part, y_part in zip(X_splits, y_splits, strict=False):
         assert len(x_part) == len(y_part)
         assert x_part.shape[1] == 5  # number of features
 
@@ -72,7 +72,7 @@ def test_simulate_poisson_regression_output_shapes():
     total_samples = sum(len(x) for x in X_splits)
     assert total_samples == 120
 
-    for x_part, y_part in zip(X_splits, y_splits):
+    for x_part, y_part in zip(X_splits, y_splits, strict=False):
         assert len(x_part) == len(y_part)
         assert x_part.shape[1] == 3  # number of features
 
@@ -88,7 +88,7 @@ def test_simulate_gaussian_regression_output_shapes():
     total_samples = sum(len(x) for x in X_splits)
     assert total_samples == 180
 
-    for x_part, y_part in zip(X_splits, y_splits):
+    for x_part, y_part in zip(X_splits, y_splits, strict=False):
         assert len(x_part) == len(y_part)
         assert x_part.shape[1] == 6  # number of features
 
@@ -104,9 +104,8 @@ def test_plot_forest_invalid_input():
         (np.array([1, 2]), np.array([0.5]), np.array([1.5, 2.5])),  # lower_bounds length mismatch
     ]
 
-    with patch("matplotlib.pyplot.show"):
-        with pytest.raises(ValueError):
-            plot_forest(data)
+    with patch("matplotlib.pyplot.show"), pytest.raises(ValueError):
+        plot_forest(data)
 
 
 def test_plot_forest_valid_input():

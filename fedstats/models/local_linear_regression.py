@@ -59,4 +59,4 @@ class LocalLinearRegression:
         if use_n:
             weighter = np.ones(coefs.shape, dtype=int) * self.n
 
-        return list(zip(coefs, weighter))  # type: ignore
+        return list(zip(coefs, weighter, strict=False))  # type: ignore

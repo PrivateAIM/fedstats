@@ -1,7 +1,7 @@
-from fedstats import FisherAggregation, PartialFisherScoring
-
 import numpy as np
 import pandas as pd
+
+from fedstats import FisherAggregation, PartialFisherScoring
 
 
 def MyPartialFisherScoring(X, y, family, tol=1e-6, max_iter=100, verbose=False):
@@ -89,6 +89,7 @@ if __name__ == "__main__":
 
     # For each predictor, apply the meta‑analysis aggregator separately.
     import numpy as np
+
     from fedstats.aggregation.meta_analysis import MetaAnalysisAggregator
 
     n_coeff = local_results[0][0].shape[0]  # number of coefficients (should equal len(coef_names))

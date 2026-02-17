@@ -81,7 +81,8 @@ class FisherAggregator(Aggregator):
             import warnings
 
             warnings.warn(
-                "Standard deviation of zero encountered in _estimate_to_pvalue; returning NaN for those p-values."
+                "Standard deviation of zero encountered in _estimate_to_pvalue; returning NaN for those p-values.",
+                stacklevel=2,
             )
 
         # If the result is a single element, return it as a scalar

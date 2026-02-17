@@ -11,7 +11,8 @@ class MetaAnalysisAggregator(Aggregator):
         """
         Wrapper class to handle aggregation via meta analysis.
 
-        The object is either a MetaAnalysisAggregatorUnit or a MetaAnalysisAggregatorCollection. For typing details, see the two classes.
+        The object is either a MetaAnalysisAggregatorUnit or a MetaAnalysisAggregatorCollection.
+        For typing details, see the two classes.
 
         :param results: A list of tuples or a list of lists of tuples. See subclasses for more.
         """
@@ -34,7 +35,7 @@ class MetaAnalysisAggregator(Aggregator):
     def aggregate_results(self, calculate_heterogeneity: bool = False) -> None:
         self.aggregator.aggregate_results(calculate_heterogeneity=calculate_heterogeneity)
 
-    def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float | tuple[float, float]]:
+    def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float] | dict[str, tuple[float, float]]:
         return self.aggregator.get_aggregated_results()
 
 
@@ -46,11 +47,12 @@ class MetaAnalysisAggregatorUnit:
         Used method is a fixed effect meta analysis or also called inverse variance weights.
         See for example Table 1 right column in https://doi.org/10.1093/bioinformatics/btq340
 
-        :param node_results: A list containing K tuples of length 2. First element is the effect size, the second the variance,
+        :param node_results: A list containing K tuples of length 2.
+            First element is the effect size, the second the variance,
         """
         self.node_results = node_results
         self.K = len(node_results)
-        self.effect_sizes, self.variances = map(lambda x: np.array(x), zip(*node_results))
+        self.effect_sizes, self.variances = map(lambda x: np.array(x), zip(*node_results, strict=False))
         self.weights = 1 / self.variances
 
     def calculate_pooled_effect_size(self) -> None:
@@ -120,11 +122,14 @@ class MetaAnalysisAggregatorCollection:
         MetaAnalysisAggregatorCollection is a wrapper of MetaAnalysisAggregatorUnit for multiple effect sizes.
 
         This class receives and processes estimators from $K$ servers, where each server produces a list of results.
-        Each element in these lists is itself a list containing $P$ tuples, corresponding to $P$ effect sizes (effect size, variance)
+        Each element in these lists is itself a list containing $P$ tuples,
+        corresponding to $P$ effect sizes (effect size, variance)
 
-        :param node_results: A list of length K containting p lists with tuples of length 2. First element is the effect size, the second the variance,
+        :param node_results: A list of length K containting p lists with tuples of length 2.
+            First element is the effect size, the second the variance,
 
-        Example how the results from K=3 servers with P=2 effect sizes may look like. E.g. mu32 corresponds to the effect size of the 2nd estimator of sever 3.
+        Example how the results from K=3 servers with P=2 effect sizes may look like.
+        Here, mu32 corresponds to the effect size of the 2nd estimator of sever 3.
             >>> data = [
             ...     [(mu11, var11), (mu12, var12)],  # Results from server 1
             ...     [(mu21, var21), (mu22, var22)],  # Results from server 2
