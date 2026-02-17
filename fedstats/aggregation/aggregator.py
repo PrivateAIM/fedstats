@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
 
 # Abstract class for aggregation methods
 class Aggregator(ABC):
-    def __init__(self, node_results: Union[List[Tuple], List[List[Tuple]], None]) -> None:
+    def __init__(self, node_results: list[tuple] | list[list[tuple]] | None) -> None:
         """
         Initialize the aggregator with results.
 
@@ -24,10 +23,9 @@ class Aggregator(ABC):
     @abstractmethod
     def get_aggregated_results(
         self, *args, **kwargs
-    ) -> Union[
-        Dict[str, np.ndarray],
-        Dict[str, Union[float, Tuple[float, float]]] | tuple | list | float,
-    ]:  # pragma: no cover
+    ) -> (
+        dict[str, np.ndarray] | dict[str, float] | dict[str, tuple[float, float]] | tuple | list | float
+    ):  # pragma: no cover
         """
         Abstract method to return aggregated results.
 

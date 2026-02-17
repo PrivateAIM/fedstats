@@ -1,5 +1,4 @@
 from functools import reduce
-from typing import Dict, Union
 
 import numpy as np
 from scipy.stats import norm
@@ -10,7 +9,7 @@ from fedstats.aggregation.aggregator import Aggregator
 class FedGLM(Aggregator):
     info_calculated: bool = False
 
-    def __init__(self, node_results: Union[list, None] = None) -> None:
+    def __init__(self, node_results: list | None = None) -> None:
         """
         Handels aggregation for of GLM fisher scorings
 
@@ -56,7 +55,7 @@ class FedGLM(Aggregator):
     def get_node_results(self) -> list[tuple[np.ndarray, np.ndarray]]:
         return self.node_results
 
-    def get_aggregated_results(self) -> Dict[str, np.ndarray]:
+    def get_aggregated_results(self) -> dict[str, np.ndarray]:
         if self.iter == 0:
             raise ValueError("No aggregated results available. Please run aggregate_results first.")
 
