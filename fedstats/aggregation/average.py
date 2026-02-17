@@ -1,25 +1,45 @@
+"""Aggregation via averaging."""
+
 import numpy as np
 
 from fedstats.aggregation.aggregator import Aggregator
 
 
 class AverageAggregator(Aggregator):
+    """Wrapper class to handle aggregation via averaging."""
+
     def __init__(self, node_results: list) -> None:
+        """Initialize the AverageAggregator.
+
+        Depending on the input, the object is either a AverageAggregatorUnit or a AverageAggregatorCollection.
+        For typing details, see the two respective classes.
+
+        Parameters
+        ----------
+        node_results
+            A list of tuples or a list of lists of tuples.
+            For AverageAggregatorUnit: A list containing K tuples of length 2.
+            For AverageAggregatorCollection: A list of length K containing P lists with tuples of length 2.
+            In the tuple, the first element is the effect size, the second the number of local samples.
         """
-        Wrapper class to handle aggregation via Average
-
-        The object is either a AverageAggregatorUnit or a AverageAggregatorCollection.
-        For typing details, see the two classes.
-
-        :param results: A list of tuples or a list of lists of tuples. See subclasses for more.
-        """
-
         super().__init__(node_results)
         self.isunit = self.check_input()
         aggregator = AverageAggregatorUnit if self.isunit else AverageAggregatorCollection
         self.aggregator = aggregator(node_results)
 
     def check_input(self) -> bool:
+        """
+        Check the input format to determine if it's for a unit or collection aggregator.
+
+        Returns
+        -------
+            True if input is for AverageAggregatorUnit, False if input is for AverageAggregatorCollection.
+
+        Raises
+        ------
+            ValueError: If the input list is empty.
+            TypeError: If the input format is invalid.
+        """
         if not self.node_results:
             raise ValueError("Node results list is empty. Please provide valid node results.")
 
@@ -33,19 +53,37 @@ class AverageAggregator(Aggregator):
             raise TypeError("Input should be either a list of tuples, or a list of list of tuples.")
 
     def aggregate_results(self) -> None:
+        """Perform the aggregation and store results in the object."""
         self.aggregator.aggregate_results()
 
     def get_aggregated_results(self) -> dict[str, np.ndarray] | dict[str, float] | dict[str, tuple[float, float]]:
+        """
+        Get aggregated results from the object.
+
+        Returns
+        -------
+            A dict with aggregated results.
+            The format of the dict depends on the format of the input and the type of aggregator used.
+            The pooled effect size(s) is/are stored under the key "aggregated_results".
+        """
         return self.aggregator.get_results()
 
 
 class AverageAggregatorUnit:
-    def __init__(self, node_results: list[tuple[float, int]]) -> None:
-        """
-        AverageAggregator can be used to aggregate K single effect sizes. Either weighted by sample size.
+    """AverageAggregatorUnit can be used to aggregate K single effect sizes, weighted by sample size."""
 
-        :param results: A list containing K tuples of length 2.
-            First element is the effect size, the second the sample size.
+    def __init__(self, node_results: list[tuple[float, int]]) -> None:
+        """Initialize the AverageAggregatorUnit.
+
+        Parameters
+        ----------
+            node_results
+                A list containing K tuples of length 2.
+                First element is the effect size, the second the sample size.
+
+        Raises
+        ------
+            ValueError: If the input list is empty.
         """
         if not node_results:
             raise ValueError("Node results list is empty. Please provide valid node results.")
@@ -56,17 +94,11 @@ class AverageAggregatorUnit:
         self.weights = self.n_samples / self.n_samples.sum()
 
     def calculate_pooled_effect_size(self) -> None:
-        """
-        Calculate the pooled effect size (weighted mean).
-        """
+        """Calculate the pooled effect size (weighted mean) and store it in the object."""
         self.pooled_effect_size = (self.effect_sizes * self.weights).sum().item()
 
     def aggregate_results(self) -> None:
-        """
-        Perform the meta-analysis and return all results.
-
-        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
-        """
+        """Perform the aggregation and store results in the object."""
         self.calculate_pooled_effect_size()
         # TODO: self.calculate_confidence_interval()
         # --> search literature for method or just use CLT properties if nothing is there
@@ -75,11 +107,13 @@ class AverageAggregatorUnit:
         # Also look here (attention! qestion is for a SEQUENCE a): https://math.stackexchange.com/questions/3135950/central-limit-theorem-for-weighted-average
 
     def get_results(self) -> dict[str, float] | dict[str, tuple[float, float]]:
-        """
-        Get results fom the object
+        """Get results fom the object.
 
-        Returns:
+        Returns
+        -------
             A dict with results.
+            The pooled effect size is stored under the key "aggregated_results".
+
         """
         results = {}
         results["aggregated_results"] = self.pooled_effect_size
@@ -88,20 +122,27 @@ class AverageAggregatorUnit:
 
 
 class AverageAggregatorCollection:
+    """AverageAggregatorCollection can be used to aggregate K lists of P effect sizes, weighted by sample size."""
+
     def __init__(self, node_results: list[list[tuple[float, int]]]):
-        """
-        AverageAggregatorCollection is a wrapper of AverageAggregatorUnit for multiple effect sizes.
+        """Initialize the AverageAggregatorCollection by creating AverageAggregatorUnits for each of the P effect sizes.
 
         This class receives and processes estimators from $K$ servers, where each server produces a list of results.
         Each element in these lists is itself a list containing $P$ tuples,
         corresponding to $P$ effect sizes (effect size, number of local samples).
-        In a standard scenario, all n would be the same. However, it is designed in this way to provide flexibility.
+        Typically, the number of local samples is the same for all effect sizes of a server, but this is not required.
 
-        :param results: A list of length K containting p lists with tuples of length 2.
-            First element is the effect size, the second the number of local samples.
+        Parameters
+        ----------
+            node_results
+                A list of length K containing P lists with tuples of length 2.
+                First element is the effect size, the second the number of local samples.
 
-        Example how the results from K=3 servers with P=2 effect sizes may look like.
-        Here, mu32 corresponds to the effect size of the 2nd estimator of sever 3.
+        Examples
+        --------
+            Input data from K=3 servers with P=2 effect sizes may look like this:
+            Here, mu32 corresponds to the effect size of the 2nd estimator of sever 3,
+            and n31 corresponds to the number of local samples used to calculate mu31.
             >>> data = [
             ...     [(mu11, n11), (mu12, n12)],  # Results from server 1
             ...     [(mu21, n21), (mu22, n22)],  # Results from server 2
@@ -120,22 +161,20 @@ class AverageAggregatorCollection:
         ]
 
     def calculate_pooled_effect_size(self) -> None:
-        """
-        Calculate the pooled effect size (weighted mean).
-        """
+        """Calculate the pooled effect size as a weighted mean and store it in the object."""
         for unit in self.aggregator_units:
             unit.calculate_pooled_effect_size()
 
     def aggregate_results(self) -> None:
-        """
-        Perform the meta-analysis and return all results.
-
-        :param calculate_heterogeneity: Boolean flag whether q statisc should be calculated.
-        """
+        """Aggregate results by calculating the pooled effect sizes and store them in the object."""
         self.calculate_pooled_effect_size()
 
     def get_results(self) -> dict[str, np.ndarray]:
-        """
-        Get results fom the object
+        """Get the pooled effect sizes from the object.
+
+        Returns
+        -------
+            A dict with results.
+            The pooled effect sizes are stored under the key "aggregated_results" as a numpy array of length P.
         """
         return dict(aggregated_results=np.array([unit.pooled_effect_size for unit in self.aggregator_units]))

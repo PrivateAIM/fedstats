@@ -1,11 +1,13 @@
+"""Module for local Fisher scoring computations."""
+
+from collections.abc import Callable
+
 import numpy as np
 from scipy.special import expit
 
 
 class LocalFisherScoring:
-    """
-    Calculates all parts for the Fisher scroing algorithm
-    """
+    """Class to perform local Fisher scoring computations for GLMs in a federated setting."""
 
     def __init__(
         self,
@@ -15,6 +17,22 @@ class LocalFisherScoring:
         fit_intercept: bool = True,
         standardize: bool = False,
     ) -> None:
+        """
+        Initialize the Local Fisher Scoring calculator.
+
+        Parameters
+        ----------
+            X : np.ndarray
+                The feature matrix (n_samples x n_features).
+            y : np.ndarray
+                The response vector (n_samples,).
+            family : {"gaussian", "binomial", "poisson"}
+                The GLM family to use.
+            fit_intercept : bool, optional
+                Whether to add an intercept term to the model. Default is True.
+            standardize : bool, optional
+                Whether to standardize the features. Default is False. Not implemented yet.
+        """
         self.X = self.make_covariate_matrix(X=X, fit_intercept=fit_intercept, standardize=standardize)
         self.y = y
         self.n, self.p = self.X.shape
@@ -27,9 +45,26 @@ class LocalFisherScoring:
 
     def make_covariate_matrix(self, X, fit_intercept: bool, standardize: bool = False) -> np.ndarray:
         """
-        Function to build a covariate matrix.
+        Prepare the covariate matrix by optionally adding an intercept and standardizing features.
 
-        Right now, it only adds intercept. Later, it can also standardize or make splines.
+        Parameters
+        ----------
+            X : np.ndarray
+                The original feature matrix.
+            fit_intercept : bool
+                Whether to add an intercept term.
+            standardize : bool
+                Whether to standardize the features. Not implemented yet.
+
+        Returns
+        -------
+            np.ndarray
+                The prepared covariate matrix.
+
+        Raises
+        ------
+            NotImplementedError
+                If standardization is requested, as it is not implemented yet.
         """
         if standardize:
             raise NotImplementedError("Not implemented yet. Do it manually beforehand.")
@@ -38,11 +73,22 @@ class LocalFisherScoring:
         return X
 
     def set_coefs(self, coefs: np.ndarray) -> None:
+        """Set the coefficient vector for the model."""
         self.beta = coefs
 
     def calc_fisher_scoring_parts(self, verbose: bool = False) -> tuple[np.ndarray, np.ndarray]:
         """
-        Returns a new array with beta coefs
+        Calculate the Fisher information matrix and the right-hand side for the current coefficient estimates.
+
+        Parameters
+        ----------
+            verbose : bool, optional
+                Whether to print detailed information during the calculation. Default is False.
+
+        Returns
+        -------
+            tuple[np.ndarray, np.ndarray]
+                A tuple containing the Fisher information matrix and the right-hand side vector.
         """
         if verbose:  # pragma: no cover
             print(f"Calculating iteration {self.iter}...")
@@ -70,56 +116,68 @@ class LocalFisherScoring:
 
         return Fisher_info, rhs
 
-    def get_glm_functions(self, family):
-        """
-        Return the functions to compute mu, dmu/deta, and V(mu) for the given GLM family.
+    def get_glm_functions(
+        self, family: str
+    ) -> tuple[
+        Callable[[float | np.ndarray], float | np.ndarray],
+        Callable[[float | np.ndarray], float | np.ndarray],
+        Callable[[float | np.ndarray], float | np.ndarray],
+    ]:
+        """Return the functions to compute mu, dmu/deta, and V(mu) for the given GLM family.
 
-        Parameters:
-            family : str, one of "gaussian", "binomial", or "poisson".
+        Parameters
+        ----------
+            family : {"gaussian", "binomial", "poisson"}
+                The GLM family to use.
 
-        Returns:
+        Returns
+        -------
             mu_fn       : function that computes mu given eta.
             dmu_deta_fn : function that computes dmu/deta given eta.
             V_fn        : function that computes V(mu) given mu.
+
+        Raises
+        ------
+            ValueError: If an unsupported family is provided.
         """
 
-        def gaussian_mu(eta):
-            """Identity link: mu = eta"""
+        def gaussian_mu(eta: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the identity link: mu = eta."""
             return eta
 
-        def gaussian_dmu_deta(eta):
-            """Derivative of identity: dmu/deta = 1"""
+        def gaussian_dmu_deta(eta: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the derivative of identity: dmu/deta = 1."""
             return np.ones_like(eta)
 
-        def gaussian_V(mu):
-            """Variance function: constant variance (here set to 1)"""
+        def gaussian_V(mu: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the variance function: constant variance (here set to 1)."""
             return np.ones_like(mu)
 
         # Define functions for the Binomial (logistic regression) family:
-        def binomial_mu(eta):
-            """Inverse logit: mu = expit(eta)"""
+        def binomial_mu(eta: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the inverse logit: mu = expit(eta)."""
             return expit(eta)
 
-        def binomial_dmu_deta(eta):
-            """Derivative of expit: mu * (1 - mu)"""
+        def binomial_dmu_deta(eta: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the derivative of expit: mu * (1 - mu)."""
             mu = expit(eta)
             return mu * (1 - mu)
 
-        def binomial_V(mu):
-            """Variance for Bernoulli: mu * (1 - mu)"""
+        def binomial_V(mu: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the variance for Bernoulli: mu * (1 - mu)."""
             return mu * (1 - mu)
 
         # Define functions for the Poisson family:
-        def poisson_mu(eta):
-            """Log link: mu = exp(eta)"""
+        def poisson_mu(eta: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the log link: mu = exp(eta)."""
             return np.exp(eta)
 
-        def poisson_dmu_deta(eta):
-            """Derivative of exp: dmu/deta = exp(eta) = mu"""
+        def poisson_dmu_deta(eta: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the derivative of exp: dmu/deta = exp(eta) = mu."""
             return np.exp(eta)
 
-        def poisson_V(mu):
-            """Variance for Poisson: V(mu) = mu"""
+        def poisson_V(mu: float | np.ndarray) -> float | np.ndarray:
+            """Calculate the variance for Poisson: V(mu) = mu."""
             return mu
 
         if family == "gaussian":

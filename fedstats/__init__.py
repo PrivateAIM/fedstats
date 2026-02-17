@@ -1,3 +1,5 @@
+"""Federated statistics library for aggregating results from multiple clients."""
+
 from .aggregation.average import AverageAggregator as _AverageAggregator
 from .aggregation.fed_glm import FedGLM as _FedGLM
 from .aggregation.fisher_aggregator import FisherAggregator as _FisherAggregator

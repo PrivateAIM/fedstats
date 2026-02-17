@@ -5,9 +5,7 @@ from fedstats.aggregation.average import AverageAggregator, AverageAggregatorCol
 
 
 def test_aggregator_unit():
-    """
-    Test AverageAggregatorUnit for a single meta-analysis.
-    """
+    """Test AverageAggregatorUnit for a single meta-analysis."""
     results = [
         (1.0, 10),  # Server 1
         (2.0, 20),  # Server 2
@@ -22,9 +20,7 @@ def test_aggregator_unit():
 
 
 def test_aggregator_empty_input():
-    """
-    Test AverageAggregatorUnit with empty input.
-    """
+    """Test AverageAggregatorUnit with empty input."""
     results = []
     with pytest.raises(ValueError):
         AverageAggregatorUnit(results)
@@ -37,9 +33,7 @@ def test_aggregator_empty_input():
 
 
 def test_aggregator_collection():
-    """
-    Test AverageAggregatorCollection for multiple meta-analyses.
-    """
+    """Test AverageAggregatorCollection for multiple meta-analyses."""
     results = [
         [(1.0, 10), (1.0, 10)],  # Server 1
         [(2.0, 20), (2.0, 20)],  # Server 2
@@ -56,9 +50,7 @@ def test_aggregator_collection():
 
 
 def test_average_aggregator():
-    """
-    Test AverageAggregator for wrapper behavior over Unit and Collection.
-    """
+    """Test AverageAggregator for wrapper behavior over Unit and Collection."""
     # Test as Unit
     unit_results = [(1.0, 10), (2.0, 20), (3.0, 30), (4.0, 40)]
     aggregator_unit = AverageAggregator(unit_results)

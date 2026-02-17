@@ -9,9 +9,7 @@ from fedstats.aggregation.meta_analysis import (
 
 
 def test_aggregator_unit():
-    """
-    Test MetaAnalysisAggregatorUnit for a single meta-analysis.
-    """
+    """Test MetaAnalysisAggregatorUnit for a single meta-analysis."""
     results = [
         (1.0, 0.1),  # Server 1
         (2.0, 0.1),  # Server 2
@@ -36,9 +34,7 @@ def test_aggregator_unit():
 
 
 def test_aggregator_unit_no_heterogeneity():
-    """
-    Test MetaAnalysisAggregatorUnit without calculating heterogeneity.
-    """
+    """Test MetaAnalysisAggregatorUnit without calculating heterogeneity."""
     results = [
         (1.0, 0.1),  # Server 1
         (2.0, 0.1),  # Server 2
@@ -59,9 +55,7 @@ def test_aggregator_unit_no_heterogeneity():
 
 
 def test_aggregator_collection():
-    """
-    Test MetaAnalysisAggregatorCollection for multiple meta-analyses.
-    """
+    """Test MetaAnalysisAggregatorCollection for multiple meta-analyses."""
     results = [
         [(1.0, 0.1), (1.0, 0.1)],  # Server 1
         [(2.0, 0.1), (2.0, 0.1)],  # Server 2
@@ -87,9 +81,7 @@ def test_aggregator_collection():
 
 
 def test_aggregator_collection_no_heterogeneity():
-    """
-    Test MetaAnalysisAggregatorCollection without calculating heterogeneity.
-    """
+    """Test MetaAnalysisAggregatorCollection without calculating heterogeneity."""
     results = [
         [(1.0, 0.1), (1.0, 0.1)],  # Server 1
         [(2.0, 0.1), (2.0, 0.1)],  # Server 2
@@ -114,9 +106,7 @@ def test_aggregator_collection_no_heterogeneity():
 
 
 def test_meta_analysis_aggregator_unit_wrapper():
-    """
-    Test MetaAnalysisAggregator for wrapper behavior over Unit.
-    """
+    """Test MetaAnalysisAggregator for wrapper behavior over Unit."""
     unit_results = [(1.0, 0.1), (2.0, 0.1), (3.0, 0.1), (4.0, 0.1)]
     aggregator_unit = MetaAnalysisAggregator(unit_results)
     assert aggregator_unit.isunit is True  # Verify it's treated as a unit
@@ -130,9 +120,7 @@ def test_meta_analysis_aggregator_unit_wrapper():
 
 
 def test_meta_analysis_aggregator_collection_wrapper():
-    """
-    Test MetaAnalysisAggregator for wrapper behavior over Collection.
-    """
+    """Test MetaAnalysisAggregator for wrapper behavior over Collection."""
     collection_results = [
         [(1.0, 0.1), (1.0, 0.1)],  # Server 1
         [(2.0, 0.1), (2.0, 0.1)],  # Server 2
@@ -154,9 +142,7 @@ def test_meta_analysis_aggregator_collection_wrapper():
 
 
 def test_meta_analysis_aggregator_rejects_wrong_input():
-    """
-    Test MetaAnalysisAggregator rejects wrong input format.
-    """
+    """Test MetaAnalysisAggregator rejects wrong input format."""
     unit_results = [1, 2, 3]
     with pytest.raises(TypeError):
         MetaAnalysisAggregator(unit_results)

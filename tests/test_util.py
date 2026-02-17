@@ -5,9 +5,7 @@ import pytest
 
 
 def test_split_data_num_clients_and_labels():
-    """
-    Test the split_data function to ensure it correctly splits features and labels.
-    """
+    """Test the split_data function to ensure it correctly splits features and labels."""
     from fedstats.util import split_data
 
     # Create dummy data
@@ -33,9 +31,7 @@ def test_split_data_num_clients_and_labels():
 
 
 def test_simulate_logistic_regression_output_shapes():
-    """
-    Test the simulate_logistic_regression function to ensure it returns correct shapes.
-    """
+    """Test the simulate_logistic_regression function to ensure it returns correct shapes."""
     from fedstats.util import simulate_logistic_regression
 
     X_splits, y_splits = simulate_logistic_regression(random_state=42, n=150, p=5)
@@ -49,9 +45,7 @@ def test_simulate_logistic_regression_output_shapes():
 
 
 def test_simulate_logistic_regression_labels_binary():
-    """
-    Test the simulate_logistic_regression function to ensure labels are binary.
-    """
+    """Test the simulate_logistic_regression function to ensure labels are binary."""
     from fedstats.util import simulate_logistic_regression
 
     _, y_splits = simulate_logistic_regression(random_state=42, n=200, p=4)
@@ -62,9 +56,7 @@ def test_simulate_logistic_regression_labels_binary():
 
 
 def test_simulate_poisson_regression_output_shapes():
-    """
-    Test the simulate_poisson_regression function to ensure it returns correct shapes.
-    """
+    """Test the simulate_poisson_regression function to ensure it returns correct shapes."""
     from fedstats.util import simulate_poisson_regression
 
     X_splits, y_splits = simulate_poisson_regression(n=120, p=3)
@@ -78,9 +70,7 @@ def test_simulate_poisson_regression_output_shapes():
 
 
 def test_simulate_gaussian_regression_output_shapes():
-    """
-    Test the simulate_gaussian_regression function to ensure it returns correct shapes.
-    """
+    """Test the simulate_gaussian_regression function to ensure it returns correct shapes."""
     from fedstats.util import simulate_gaussian_regression
 
     X_splits, y_splits = simulate_gaussian_regression(n=180, p=6)
@@ -94,9 +84,7 @@ def test_simulate_gaussian_regression_output_shapes():
 
 
 def test_plot_forest_invalid_input():
-    """
-    Test the plot_forest function to ensure it raises ValueError for invalid input lengths.
-    """
+    """Test the plot_forest function to ensure it raises ValueError for invalid input lengths."""
     from fedstats.util import plot_forest
 
     # Mismatched lengths
@@ -109,9 +97,7 @@ def test_plot_forest_invalid_input():
 
 
 def test_plot_forest_valid_input():
-    """
-    Test the plot_forest function with valid input to ensure no exceptions are raised.
-    """
+    """Test the plot_forest function with valid input to ensure no exceptions are raised."""
     from fedstats.util import plot_forest
 
     data = [

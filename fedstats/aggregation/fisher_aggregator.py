@@ -1,3 +1,5 @@
+"""Aggregator for combining p-values using Fisher's method."""
+
 import numpy as np
 from scipy.stats import combine_pvalues, norm
 
@@ -5,25 +7,37 @@ from .aggregator import Aggregator
 
 
 class FisherAggregator(Aggregator):
-    """
-    Aggregates local (estimate, stddev) results by converting them to p-values
-    and combining with Fisher's method in the scipy implementation.
-    The final result is a single combined p-value.
-    This requires that the underlying distributions of the estimates are approximately normal.
+    """Aggregator for combining p-values using Fisher's method.
 
-    :param node_results: A list of tuples (estimate, stddev) from each site.
+    This class takes local (estimate, stddev) tuples from each site, converts them to p-values, and combines them using
+    Fisher's method. The final result is a single combined p-value.
+    This method assumes that the underlying distributions of the estimates are approximately normal.
     """
 
     node_results: list[tuple[float, float]]
 
     def __init__(self, node_results: list[tuple[float, float]]):
+        """Initialize the FisherAggregator with local results.
+
+        Parameters
+        ----------
+             node_results
+                A list of tuples, where each tuple contains (estimate, stddev).
+        """
         super().__init__(node_results)
 
     def aggregate_results(self, verbose: bool = False) -> None:
         """
-        Computes a single combined p-value.
+        Compute a single combined p-value for the given local results using Fisher's method.
 
-        :param verbose: If True, prints local p-values for each site during aggregation.
+        Parameters
+        ----------
+            verbose
+                If True, print the local p-values for each site during aggregation.
+
+        Raises
+        ------
+            ValueError: If node_results is None or empty.
         """
         if not self.node_results:
             raise ValueError("No results to aggregate.")
@@ -39,9 +53,15 @@ class FisherAggregator(Aggregator):
 
     def get_aggregated_results(self) -> float:
         """
-        Returns the stored aggregated result.
+        Return the combined p-value after aggregation.
 
-        :return: The combined p-value from the aggregation.
+        Returns
+        -------
+            The combined p-value as a float.
+
+        Raises
+        ------
+            ValueError: If aggregate_results has not been called yet.
         """
         if hasattr(self, "combined_p_value"):
             return self.combined_p_value
@@ -50,15 +70,22 @@ class FisherAggregator(Aggregator):
 
     @staticmethod
     def _estimate_to_pvalue(estimate: float | np.ndarray, stddev: float | np.ndarray) -> float | np.ndarray:
-        """
-        Convert estimate/stddev to a two-sided p-value using z-scores.
+        """Convert estimate/stddev to a two-sided p-value using z-scores.
+
         Works for both scalars and numpy arrays.
 
         Returns nan for any cases where stddev is zero, as the test is not valid in those cases.
 
-        :param estimate: The local estimate(s) from the site(s).
-        :param stddev: The local standard deviation(s) from the site(s).
-        :return: The corresponding p-value(s).
+        Parameters
+        ----------
+            estimate
+                The local estimate(s) from the site(s).
+            stddev
+                The local standard deviation(s) from the site(s).
+
+        Returns
+        -------
+            The corresponding p-value(s) as a float or numpy array.
         """
         # Ensure inputs are numpy arrays
         estimate = np.asarray(estimate)

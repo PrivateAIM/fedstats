@@ -28,11 +28,14 @@ dev = [
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["examples/*"]
 
 [tool.ruff.lint]
 select = [
     # pycodestyle
     "E",
+    # pydocstyle
+    "D",
     # Pyflakes
     "F",
     # pyupgrade
@@ -45,6 +48,12 @@ select = [
     "I",
 ]
 fixable = ["ALL"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["D"]
 
 [tool.ruff.format]
 line-ending = "auto"

@@ -1,3 +1,5 @@
+"""Utility functions for federated statistics examples and tests."""
+
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -8,9 +10,7 @@ from scipy.special import expit  # Sigmoid function for logistic regression
 def split_data(
     X: np.ndarray, y: np.ndarray, num_clients: int = 5, random_state: int = 42
 ) -> tuple[list[np.ndarray], list[np.ndarray]]:
-    """
-    Function to split np arrays X and y into num_clients parts.
-    """
+    """Split features and labels into specified number of clients with shuffling."""
     n, p = X.shape
     rng = np.random.default_rng(random_state)
     index = np.arange(n)
@@ -59,6 +59,7 @@ def plot_forest(
     save_plot=False,
     filename="Forestplot",
 ):  # pragma: no cover
+    """Plot a forest plot for comparing results from different datasets."""
     for i, (point_estimates, lower_bounds, upper_bounds) in enumerate(data):
         if len(point_estimates) != len(lower_bounds) or len(point_estimates) != len(upper_bounds):
             raise ValueError(

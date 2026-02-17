@@ -2,9 +2,7 @@ from fedstats.aggregation.aggregator import Aggregator
 
 
 def test_aggregator_unit():
-    """
-    Test abstract class Aggregator
-    """
+    """Test abstract class Aggregator"""
     # arbitrary results from servers
     node_results = [
         (-99, -99),  # Server 1
