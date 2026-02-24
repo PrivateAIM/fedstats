@@ -1,5 +1,5 @@
 import numpy as np
-from flame.star import StarAggregator, StarAnalyzer, StarModel
+from flame.star import StarAggregator, StarAnalyzer, StarModelTester
 
 from fedstats import FederatedGLM, PartialFisherScoring
 from fedstats.util import simulate_logistic_regression
@@ -9,17 +9,6 @@ class LocalFisherScoring(StarAnalyzer):
     def __init__(self, flame):
         """Initializes local analyzer node."""
         super().__init__(flame)  # Connects this analyzer to the FLAME components
-        self.iteration = 0
-        local_PRNGKey = np.random.randint(1, 99999)
-        X, y = simulate_logistic_regression(
-            local_PRNGKey, n=50, k=1
-        )  # k=1 as we need only one dataset
-        self.X, self.y = X[0], y[0]
-
-        self.local_model_parts = PartialFisherScoring(
-            self.X, self.y, family="binomial", fit_intercept=False
-        )
-        print(f"Initial values of beta: {self.local_model_parts.beta}")
 
     def analysis_method(self, data, aggregator_results):
         """
@@ -28,21 +17,30 @@ class LocalFisherScoring(StarAnalyzer):
         aggregator_results should be a list with one element. This element is a tuple 2 elements:
         1. Aggregation results (np.ndarray) 2. convergence flag.
         """
-        # first iteration, aggregator gives no results and therefore None, use local inital values
-        if self.iteration == 0:
-            # wrap as a list (reason in next line)
-            aggregator_results = [(self.local_model_parts.beta, False)]
+        print()
+        print(f"------ ANALYSIS in {self.id} ------")
 
-        # aggregator_results are a list with one element
-        aggregator_results = aggregator_results[0]
+        self.x, self.y = data[0], data[1]
 
+        self.local_model_parts = PartialFisherScoring(
+            self.x, self.y, family="binomial", fit_intercept=False
+        )
+
+        # first iteration, aggregator gives no results and therefore None, use local inital values. In subsequent iterations, use aggregator results.
+        if aggregator_results is None:
+            print(f"Initial values of beta: {self.local_model_parts.beta}")
+
+            aggregator_results = (self.local_model_parts.beta, False)
+
+
+        print(f"Aggregator results (it. {self.num_iterations}) are: {aggregator_results}")
         # if condition checks, converged flag. In the case of convergence, return the result
         if not aggregator_results[1]:
             aggregator_results = aggregator_results[0]
-            self.iteration += 1
-            print(f"Aggregator results are: {aggregator_results}")
             self.local_model_parts.set_coefs(aggregator_results)
-            return self.local_model_parts.calc_fisher_scoring_parts(verbose=True)
+            fisher_scoring_parts = self.local_model_parts.calc_fisher_scoring_parts(verbose=False)
+            print(f"Fisher scoring parts (it. {self.num_iterations}): {fisher_scoring_parts}")
+            return fisher_scoring_parts
         else:
             return aggregator_results[0]
 
@@ -66,14 +64,23 @@ class FederatedLogisticRegression(StarAggregator):
         :param analysis_results: A list of analysis results from each analyzer node.
         :return: The aggregated result (e.g., total patient count across all analyzers).
         """
+        print()
+        print(f"------ AGGREGATION in {self.id} ------")
         if not self._convergence_flag:
-            self.glm.set_results(analysis_results)
+            self.glm.set_node_results(analysis_results)
             self.glm.aggregate_results()
+
+            print(f"Aggregated coefficients (it. {self.num_iterations}): {self.glm.get_coefs()}")
+            print(f"Aggregated convergence flag (it. {self.num_iterations}): {self._convergence_flag}")
+
             return self.glm.get_coefs(), self._convergence_flag
         else:
+
+            print(f"Final coefficients (it. {self.num_iterations}): {self.glm.get_coefs()}")
+
             return self.glm.get_summary()
 
-    def has_converged(self, result, last_result, num_iterations):
+    def has_converged(self, result, last_result):
         """
         Determines if the aggregation process has converged.
 
@@ -82,17 +89,26 @@ class FederatedLogisticRegression(StarAggregator):
         :param num_iterations: The number of iterations completed so far.
         :return: True if the aggregation has converged; False to continue iterations.
         """
+        print()
+        print("------ CONVERGENCE CHECK ------")
         if self._convergence_flag:
-            print(f"Converged after {num_iterations} iterations.")
+            print(f"Converged after {self.num_iterations} iterations.")
             return True
+
+        if last_result is None:
+            print("First iteration, no convergence check.")
+            return False
+
+        diff = np.linalg.norm(result[0] - last_result[0], ord=2).item()
+        print(f"Difference between coefficients (it. {self.num_iterations}): {diff}")
 
         convergence = self.glm.check_convergence(last_result[0], result[0], tol=1e-4)
         if convergence:
             # TODO: Currently, a the following is a workaround. Another round of analysis is done with no results such that
             # the final result can be modified. Maybe there is a better solution in the future.
             self._convergence_flag = True
-            return False  # here, False is returned even though convergence is achieved to perform a final "redundant" round
-        elif num_iterations > 100:
+            return False  # here, False is returned even though convergence is achieved to perform a final round, where a summary is returned instead of coefficients.
+        elif self.num_iterations > 100:
             # TODO: Include option for max iteration and not hardcoded tol
             print(
                 "Maximum number of 100 iterations reached. Returning current results."
@@ -110,11 +126,19 @@ def main():
     - Specifies the type of data and queries to execute.
     - Configures analysis parameters like iteration behavior and output format.
     """
-    StarModel(
+    seed = 42
+    X, y = simulate_logistic_regression(
+        seed, n=50, p=3
+    )
+
+    data_splits = list(zip(X, y))  # create 5 splits of the data for 5 analyzer nodes
+
+
+    StarModelTester(
+        data_splits=data_splits,
         analyzer=LocalFisherScoring,  # Custom analyzer class (must inherit from StarAnalyzer)
         aggregator=FederatedLogisticRegression,  # Custom aggregator class (must inherit from StarAggregator)
         data_type="s3",  # Type of data source ('fhir' or 's3')
-        # query="Patient?_summary=count",  # Query or list of queries to retrieve data
         simple_analysis=False,  # True for single-iteration; False for multi-iterative analysis
         output_type="str",  # Output format for the final result ('str', 'bytes', or 'pickle')
         analyzer_kwargs=None,  # Additional keyword arguments for the custom analyzer constructor (i.e. MyAnalyzer)
