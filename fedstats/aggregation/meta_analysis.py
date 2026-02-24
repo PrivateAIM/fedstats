@@ -43,7 +43,11 @@ class MetaAnalysisAggregator(Aggregator):
         Raises
         ------
             TypeError: If the input format is invalid.
+            ValueError: If the input list is empty.
         """
+        if not self.node_results:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         if all(isinstance(item, tuple) for item in self.node_results):
             return True
         elif all(
@@ -96,7 +100,14 @@ class MetaAnalysisAggregatorUnit:
             node_results
                 A list containing K tuples of length 2.
                 First element is the effect size, the second the variance.
+
+        Raises
+        ------
+            ValueError: If the input list is empty.
         """
+        if not node_results:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         self.node_results = node_results
         self.K = len(node_results)
         self.effect_sizes, self.variances = map(lambda x: np.array(x), zip(*node_results, strict=False))
@@ -118,7 +129,14 @@ class MetaAnalysisAggregatorUnit:
         ----------
             alpha_level : float, optional
                 A float in [0,1] that representes the confidence level. Default is 0.05 for a 95% confidence interval.
+
+        Raises
+        ------
+            ValueError: If alpha_level is not in [0,1].
         """
+        if not (0 <= alpha_level <= 1):
+            raise ValueError("alpha_level should be a float in the interval [0,1].")
+
         std_error = np.sqrt(self.pooled_variance)
         quantile = norm.ppf(1 - alpha_level / 2, loc=0, scale=1)
         self.ci_lower = (self.pooled_effect_size - quantile * std_error).item()
@@ -196,7 +214,15 @@ class MetaAnalysisAggregatorCollection:
                 ...     [(mu21, var21), (mu22, var22)],  # Results from server 2
                 ...     [(mu31, var31), (mu32, var32)]   # Results from server 3
                 ... ]
+
+        Raises
+        ------
+            TypeError: If the input format is invalid.
+            ValueError: If the input list is empty.
         """
+        if not node_results:
+            raise ValueError("Node results list is empty. Please provide valid node results.")
+
         self.node_results = node_results
         self.K = len(node_results)
 
@@ -222,7 +248,14 @@ class MetaAnalysisAggregatorCollection:
         ----------
             alpha_level : float, optional
                 A float in [0,1] that representes the confidence level. Default is 0.05 for a 95% confidence interval.
+
+        Raises
+        ------
+            ValueError: If alpha_level is not in [0,1].
         """
+        if not (0 <= alpha_level <= 1):
+            raise ValueError("alpha_level should be a float in the interval [0,1].")
+
         for unit in self.aggregator_units:
             unit.calculate_confidence_interval(alpha_level=alpha_level)
 

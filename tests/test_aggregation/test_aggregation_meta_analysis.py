@@ -33,6 +33,56 @@ def test_aggregator_unit():
     assert agg_res["confidence_interval"][0] < 2.5 < agg_res["confidence_interval"][1]  # type: ignore
 
 
+def test_aggregator_empty_input():
+    """Test AverageAggregatorUnit with empty input."""
+    results = []
+    with pytest.raises(ValueError):
+        MetaAnalysisAggregatorUnit(results)
+
+    with pytest.raises(ValueError):
+        MetaAnalysisAggregator(results)
+
+    with pytest.raises(ValueError):
+        MetaAnalysisAggregatorCollection(results)
+
+
+def test_aggregator_wrong_confidence_level():
+    """Test AverageAggregatorUnit with wrong confidence level."""
+    results = [
+        (1.0, 0.1),  # Server 1
+        (2.0, 0.1),  # Server 2
+        (3.0, 0.1),  # Server 3
+        (4.0, 0.1),  # Server 4
+    ]
+    meta_analysis = MetaAnalysisAggregatorUnit(results)
+    meta_analysis.aggregate_results(calculate_heterogeneity=True)
+
+    with pytest.raises(ValueError):
+        meta_analysis.calculate_confidence_interval(alpha_level=-0.1)
+
+    with pytest.raises(ValueError):
+        meta_analysis.calculate_confidence_interval(alpha_level=1.5)
+
+
+def test_aggregator_collection_wrong_confidence_level():
+    """Test AverageAggregatorCollection with wrong confidence level."""
+    results = [
+        [(1.0, 0.1), (1.0, 0.1)],  # Server 1
+        [(2.0, 0.1), (2.0, 0.1)],  # Server 2
+        [(3.0, 0.1), (3.0, 0.1)],  # Server 3
+        [(4.0, 0.1), (4.0, 0.1)],  # Server 4
+    ]
+
+    collection = MetaAnalysisAggregatorCollection(results)
+    collection.aggregate_results(calculate_heterogeneity=True)
+
+    with pytest.raises(ValueError):
+        collection.calculate_confidence_interval(alpha_level=-0.1)
+
+    with pytest.raises(ValueError):
+        collection.calculate_confidence_interval(alpha_level=1.5)
+
+
 def test_aggregator_unit_no_heterogeneity():
     """Test MetaAnalysisAggregatorUnit without calculating heterogeneity."""
     results = [
