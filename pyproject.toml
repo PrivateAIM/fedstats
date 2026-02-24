@@ -24,6 +24,9 @@ dev = [
     "pre-commit (>=4.5.1,<5.0.0)",
     "ruff (>=0.15.1,<0.16.0)"
 ]
+flame = [
+    "flame @ git+https://github.com/PrivateAIM/python-sdk-patterns.git@1ec353b"
+]
 
 
 [tool.ruff]
