@@ -1,5 +1,5 @@
 import pandas as pd
-from flame.star import StarAggregator, StarAnalyzer, StarModel
+from flame.star import StarAggregator, StarAnalyzer, StarModelTester
 from lifelines import CoxPHFitter
 from lifelines.datasets import load_rossi
 
@@ -27,10 +27,6 @@ class LocalCoxModel(StarAnalyzer):
                                    - Contains the result from the aggregator's aggregation_method in subsequent iterations.
         :return: Any result of your analysis on one node (ex. patient count).
         """
-        data = load_rossi()
-        # use a fraction 50% randomly selected data
-        data = data.sample(frac=0.5).reset_index(drop=True)
-
         cph = CoxPHFitter()
         cph.fit(data, duration_col="week", event_col="arrest")
         est, sds = cph.params_.to_list(), (cph.standard_errors_**2).to_list()
@@ -70,21 +66,21 @@ class ResultsAggregator(StarAggregator):
         # aggregate results
         aggregator = MetaAnalysisAggregation(analysis_results)
         aggregator.aggregate_results()
-        results_aggregated = aggregator.get_results()
+        results_aggregated = aggregator.get_aggregated_results()
 
         res_aggregated = pd.DataFrame(
             {
                 "type": "aggregated",
                 "name": cph.params_.index,
                 "coef": results_aggregated["aggregated_results"],
-                "ci_lower": results_aggregated["confidence_interval"][:, 0],
-                "ci_upper": results_aggregated["confidence_interval"][:, 1],
+                "ci_lower": results_aggregated["confidence_interval"][:, 0], # type: ignore
+                "ci_upper": results_aggregated["confidence_interval"][:, 1], # type: ignore
             }
         )
 
         return pd.concat((res_full_data, res_aggregated))
 
-    def has_converged(self, result, last_result, num_iterations):
+    def has_converged(self, result, last_result):
         """
         Determines if the aggregation process has converged.
 
@@ -104,11 +100,18 @@ def main():
     - Specifies the type of data and queries to execute.
     - Configures analysis parameters like iteration behavior and output format.
     """
-    StarModel(
+
+    data = load_rossi()
+    # shuffle and split the data into 2 parts to simulate 2 different data sources
+    data = data.sample(frac=1, random_state=42).reset_index(drop=True)
+    split_data = [data.iloc[: len(data) // 2], data.iloc[len(data) // 2 :]]
+
+
+    StarModelTester(
+        data_splits=split_data,  # List of data splits for each analyzer node (not needed for this example as dummy data is generated within the analyzer)
         analyzer=LocalCoxModel,  # Custom analyzer class (must inherit from StarAnalyzer)
         aggregator=ResultsAggregator,  # Custom aggregator class (must inherit from StarAggregator)
         data_type="s3",  # Type of data source ('fhir' or 's3')
-        # query="Patient?_summary=count",  # Query or list of queries to retrieve data
         simple_analysis=True,  # True for single-iteration; False for multi-iterative analysis
         output_type="str",  # Output format for the final result ('str', 'bytes', or 'pickle')
         analyzer_kwargs=None,  # Additional keyword arguments for the custom analyzer constructor (i.e. MyAnalyzer)
