@@ -423,8 +423,8 @@ opendp = ">=0.12.1,<0.13.0"
 [package.source]
 type = "git"
 url = "https://github.com/PrivateAIM/python-sdk-patterns.git"
-reference = "0.5.0"
-resolved_reference = "a3643a14bb52842138455174ea8cb5b27d071ba3"
+reference = "1ec353b"
+resolved_reference = "1ec353b1f719bf00cb5f96d255150e2781dbd160"
 
 [[package]]
 name = "flamesdk"
@@ -2066,4 +2066,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "7cbb2407c8dbb781f2f68ddb21dfbc851386c457f16244bd0f1132fbeb0efc11"
+content-hash = "9d2896ec39095e31585e389ea192743deb86aa447eb7a401d8ae3c60b87659ce"
